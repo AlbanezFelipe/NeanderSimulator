@@ -1,0 +1,16 @@
+/* app global css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+
+@font-face {
+    font-family: 'Seven Segment';
+    src: url('../assets/seven_segment/SevenSegment.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    font-family: "Roboto Mono", monospace;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
