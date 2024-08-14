@@ -1,6 +1,6 @@
 <template>
     <q-page class="flex justify-around">
-        <div class="row full-width">
+        <div class="row justify-center full-width no-wrap">
 
             <!-- RAM -->
             <div class="column">
@@ -67,9 +67,19 @@
 
                     <!-- Simulation -->
                     <BoxWrapper title="Simulação">
-                        <div class="row">
+                        <!-- Actions -->
+                        <div class="row q-col-gutter-sm q-mb-sm" style="min-width: 100%">
+                            <div class="col-6"><q-btn class="full-width" color="negative" icon="power_settings_new" label="RESET" /></div>
+                            <div class="col-6"><q-btn class="full-width" color="secondary" icon="restore" label="CLEAR" /></div>
+                            <div class="col-6"><q-btn class="full-width" color="red" icon="pan_tool" label="STOP" /></div>
+                            <div class="col-6"><q-btn class="full-width" color="green" icon="redo" label="NEXT" /></div>
+                            <div class="col-12"><q-btn class="full-width" color="primary" icon="autorenew" label="NEXT (AUTO)" /></div>
+                        </div>
+
+                        <!-- Clock Frequency -->
+                        <div class="column">
                             <div class="row items-center">
-                                <span class="q-mr-sm">Clock Frequency (ms) {{ f }}</span>
+                                <span class="q-mr-sm">Clock Frequency (ms) {{ clock }}</span>
                                 <q-badge rounded>
                                     <span class="help">?</span>
                                     <q-tooltip anchor="center right" self="center left" :offset="[4, 4]">
@@ -79,17 +89,26 @@
                             </div>
                             <q-slider v-model="clock" :min="0" :max="5000" :step="50" label />
                         </div>
+
+                        <!-- statistics -->
+                        <div class="column">
+                            <span>Ciclos: <q-badge color="primary">99</q-badge></span>
+                            <span>Leituras: <q-badge color="primary">99</q-badge></span>
+                            <span>Escritas: <q-badge color="primary">99</q-badge></span>
+                        </div>
                     </BoxWrapper>
                 </div>
             </div>
+            <!--
             <div class="column">
                 <span>Diagrama</span>
-                <!-- Canvas -->
+                <!- Canvas ->
                 <img alt="Quasar logo"
                     src="~assets/diagram.png"
                     style="width: 600px; height: auto"
                 >
             </div>
+            -->
         </div>
     </q-page>
 </template>
