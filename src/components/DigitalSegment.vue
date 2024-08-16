@@ -6,6 +6,9 @@
                 <span class="segment-off absolute-center">888</span>
                 <span class="segment-off" style="opacity: 0">888</span>
             </div>
+            <q-popup-edit @update:model-value="$emit('update', $event)" :model-value="value" title="Update data" buttons v-slot="scope">
+                <q-input type="number" v-model.number="scope.value" dense autofocus />
+            </q-popup-edit>
         </div>
         <div class="row">
             <div class="q-mt-xs" v-for="(b, i) in ([...(value >>> 0).toString(2).padStart(8, '0')].map(n => !!(n * 1)))" :key="'acc-' + i">

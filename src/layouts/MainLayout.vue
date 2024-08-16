@@ -12,10 +12,11 @@
                 />
 
                 <q-toolbar-title>
-                    Quasar App
+                    Simulador Neander
                 </q-toolbar-title>
 
-                <div>Quasar v{{ $q.version }}</div>
+                <q-btn color="white" outline label="Load" icon="upload" />
+                <q-btn class="q-ml-sm" color="negative" label="Save" icon="save" />
             </q-toolbar>
         </q-header>
 
