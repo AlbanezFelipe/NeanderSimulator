@@ -13,8 +13,9 @@ export default class Neander {
         }
     }
 
-    static instructions (n) {
-        return ({
+    static instructions () {
+        return {
+            0: 'NOP',
             16: 'STA',
             32: 'LDA',
             48: 'ADD',
@@ -25,7 +26,11 @@ export default class Neander {
             144: 'JN',
             160: 'JZ',
             240: 'HLT'
-        })[n] || 'NOP'
+        }
+    }
+
+    static getInstruction (n) {
+        return (Neander.instructions())[n] || 'NOP'
     }
 
     control () {
@@ -36,7 +41,7 @@ export default class Neander {
     }
 
     mnemonics () {
-        return this.RAM.map((n, i, arr) => [16, 32, 48, 64, 80, 128, 144, 160].includes(arr[i - 1]) ? `[${n}]` : Neander.instructions(n))
+        return this.RAM.map((n, i, arr) => [16, 32, 48, 64, 80, 128, 144, 160].includes(arr[i - 1]) ? `[${n}]` : Neander.getInstruction(n))
     }
 
     read (address) {
@@ -53,7 +58,7 @@ export default class Neander {
     }
 
     next () {
-        this.RI = [Neander.instructions(this.read(this.PC))]
+        this.RI = [Neander.getInstruction(this.read(this.PC))]
         this.PC += 1
         this[this.RI[0]]() // dynamic call
         this.counter.instructions += 1
