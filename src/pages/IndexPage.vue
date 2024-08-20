@@ -88,6 +88,8 @@
                 <CanvasArchitecture :computer="computer" />
             </div>
         </div>
+        <DialogSave ref="dialogsave" @save="download" />
+        <DialogLoad ref="dialogload" @load="readFile" />
     </q-page>
 </template>
 
@@ -101,7 +103,10 @@ import DigitalSegment from 'components/DigitalSegment.vue'
 import BoxWrapper from 'components/BoxWrapper.vue'
 import LED from 'components/LED.vue'
 import CanvasArchitecture from 'components/CanvasArchitecture.vue'
+import DialogSave from 'components/DialogSave.vue'
+import DialogLoad from 'components/DialogLoad.vue'
 import Neander from '../neander.js'
+import { saveBlob, intArrayToMem, intArrayToHexdump, partition } from '../utils.js'
 
 const columnsProgram = [
     {
@@ -153,7 +158,7 @@ const columnsData = [
 
 export default defineComponent({
     name: 'IndexPage',
-    components: { MemoryTable, DigitalSegment, BoxWrapper, LED, CanvasArchitecture },
+    components: { MemoryTable, DigitalSegment, BoxWrapper, LED, CanvasArchitecture, DialogSave, DialogLoad },
     data: () => ({
         arch: 'Neander',
         computer: new Neander(new Array(256).fill(0)),
@@ -184,6 +189,37 @@ export default defineComponent({
         },
         next () {
             this.computer.next()
+        },
+        save () {
+            this.$refs.dialogsave.call()
+        },
+        load () {
+            this.$refs.dialogload.call()
+        },
+        download (name, format) {
+            saveBlob(({
+                mem: intArrayToMem,
+                hex: intArrayToHexdump,
+                txt: d => new Blob([d.join('\n')], { type: 'text/plain' })
+            })[format](this.computer.RAM), `${name}.${format}`)
+        },
+        readFile (file) {
+            file.arrayBuffer().then(buffer => {
+                const arr = new Uint16Array(buffer)
+                // mem
+                if (arr[0] + arr[1] === 41031) {
+                    this.computer.RAM = [...arr.slice(2)]
+                    return
+                }
+
+                const txt = (new TextDecoder('utf-8')).decode(arr)
+
+                // Hexdump
+                if (txt.slice(0, 8) === '034e4452') {
+                    this.computer.RAM = partition(txt.slice(8), 4).map(n => parseInt(n.slice(0, 2), '16'))
+                    // return
+                }
+            })
         }
     }
 })

@@ -15,8 +15,8 @@
                     Simulador Neander
                 </q-toolbar-title>
 
-                <q-btn color="white" outline label="Load" icon="upload" />
-                <q-btn class="q-ml-sm" color="negative" label="Save" icon="save" />
+                <q-btn @click="$refs.view.load?.()" color="white" outline label="Load" icon="upload" />
+                <q-btn @click="$refs.view.save?.()" class="q-ml-sm" color="negative" label="Save" icon="save" />
             </q-toolbar>
         </q-header>
 
@@ -34,7 +34,9 @@
         </q-drawer>
 
         <q-page-container>
-            <router-view />
+            <router-view v-slot="{ Component }">
+                <component ref="view" :is="Component" />
+            </router-view>
         </q-page-container>
     </q-layout>
 </template>
