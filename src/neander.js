@@ -4,6 +4,7 @@ export default class Neander {
         this.PC = 0
         this.ACC = 0
         this.RI = [0]
+        this.BP = Math.max(RAM.length - 1, 0)
         this.clockHLT = false
         this.counter = {
             accesses: 0,

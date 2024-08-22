@@ -37,6 +37,16 @@
             <template v-slot:body-cell-p="props">
                 <q-td :props="props">
                     <q-icon v-if="props.value" name="east" color="black" size="24px"/>
+                    <q-icon v-if="props.row.address === breakpoint" name="radio_button_checked" color="red" size="24px"/>
+                    <q-popup-edit :model-value="props.value" title="Ponteiros" :ref="'pointerPopup' + props.row.address">
+                        <div class="column flex-center">
+                            <span><b>address:</b> {{ props.row.address }}</span>
+                            <div class="row flex-center no-wrap">
+                                <q-btn @click="$emit('set-pointer', props.row.address); $refs['pointerPopup' + props.row.address]?.hide()" class="q-mr-sm" color="primary" icon="east" label="Set PC" />
+                                <q-btn @click="$emit('set-breakpoint', props.row.address); $refs['pointerPopup' + props.row.address]?.hide()" color="primary" icon="radio_button_checked" label="Set BP" />
+                            </div>
+                        </div>
+                    </q-popup-edit>
                 </q-td>
             </template>
 
@@ -126,6 +136,10 @@ export default defineComponent({
         instructions: {
             type: Array,
             default: () => []
+        },
+        breakpoint: {
+            type: Number,
+            required: false
         }
     },
     methods: {

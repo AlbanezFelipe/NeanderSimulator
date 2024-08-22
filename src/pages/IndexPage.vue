@@ -3,13 +3,13 @@
         <div class="row justify-center full-width no-wrap q-py-md q-px-md">
 
             <!-- RAM -->
-            <MemoryTable title="Programa" :rows="ramRows" :columns="columnsProgram" @updateRow="updateRow" v-model:base="baseProgram" :instructions="instructions" />
-            <MemoryTable class="q-ml-lg" title="Dados" :rows="ramRows" :columns="columnsData" @updateRow="updateRow" v-model:base="baseData" />
+            <MemoryTable v-if="configStore.showTableProgram" class="q-mr-lg" title="Programa" :rows="ramRows" :columns="columnsProgram" @updateRow="updateRow" v-model:base="baseProgram" :instructions="instructions" :breakpoint="computer.BP" @setPointer="setPointer" @setBreakpoint="setBreakpoint" />
+            <MemoryTable v-if="configStore.showTableData" class="q-mr-lg" title="Dados" :rows="ramRows" :columns="columnsData" @updateRow="updateRow" v-model:base="baseData" />
 
             <!-- Machine -->
-            <div class="column wrapper q-ml-lg">
+            <div class="column wrapper">
                 <span class="bg-primary text-white q-px-sm q-py-sm wrapper-title">Computador</span>
-                <div class="column q-pa-sm">
+                <div class="column q-pa-sm no-wrap" style="overflow: auto; flex-grow: 1; height: 500px">
 
                     <!-- Architecture -->
                     <div class="row items-center q-mb-sm">
@@ -43,7 +43,7 @@
                         <!-- Actions -->
                         <div class="row q-col-gutter-sm q-mb-sm" style="min-width: 100%">
                             <div class="col-4"><q-btn class="full-width" color="negative" icon="power_settings_new" label="RESET" /></div>
-                            <div class="col-4"><q-btn class="full-width" color="red" icon="pan_tool" label="STOP (HLT)" /></div>
+                            <div class="col-4"><q-btn class="full-width" color="red" icon="radio_button_checked" label="STOP (HLT)" /></div>
                             <div class="col-4"><q-btn class="full-width" color="secondary" icon="restore" label="CLEAR" /></div>
                             <div class="col-4"><q-btn @click="next" class="full-width" color="primary" icon="redo" label="NEXT (INSTRUCTION)" /></div>
                             <div class="col-4"><q-btn @click="next" class="full-width" color="primary" icon="redo" label="NEXT (CLOCK)" /></div>
@@ -83,7 +83,7 @@
                 </div>
             </div>
             <!-- Canvas -->
-            <div class="column wrapper q-ml-lg">
+            <div v-if="configStore.showCanvasDiagram" class="column wrapper q-ml-lg">
                 <span class="bg-primary text-white q-px-sm q-py-sm wrapper-title">Diagrama</span>
                 <CanvasArchitecture :computer="computer" />
             </div>
@@ -107,6 +107,7 @@ import DialogSave from 'components/DialogSave.vue'
 import DialogLoad from 'components/DialogLoad.vue'
 import Neander from '../neander.js'
 import { saveBlob, intArrayToMem, intArrayToHexdump, partition } from '../utils.js'
+import { useConfigStore } from 'stores/config.js'
 
 const columnsProgram = [
     {
@@ -168,7 +169,8 @@ export default defineComponent({
         baseData: 'decimal'
     }),
     setup () {
-        return { columnsProgram, columnsData }
+        const configStore = useConfigStore()
+        return { columnsProgram, columnsData, configStore }
     },
     computed: {
         ramRows () {
@@ -220,6 +222,12 @@ export default defineComponent({
                     // return
                 }
             })
+        },
+        setPointer (PC) {
+            this.computer.PC = PC
+        },
+        setBreakpoint (BP) {
+            this.computer.BP = BP
         }
     }
 })
