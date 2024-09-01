@@ -28,15 +28,47 @@
                         <DigitalSegment @update="computer.PC = $event" :value="computer.PC" />
                     </div>
 
-                    <!-- Control Bus -->
-                    <BoxWrapper title="Barramento de Controle">
+                     <!-- MDR -->
+                    <div class="row justify-between items-center q-mb-sm">
+                        <span>MDR</span>
+                        <DigitalSegment @update="computer.MDR = $event" :value="computer.MDR" />
+                    </div>
+
+                     <!-- MAR -->
+                    <div class="row justify-between items-center q-mb-sm">
+                        <span>MAR</span>
+                        <DigitalSegment @update="computer.MAR = $event" :value="computer.MAR" />
+                    </div>
+
+                     <!-- RI -->
+                    <div class="row justify-between items-center q-mb-sm">
+                        <span>RI</span>
+                        <DigitalSegment @update="computer.RI = $event" :value="computer.RI" />
+                    </div>
+
+                    <!-- Flags -->
+                    <BoxWrapper title="Flags">
                         <div class="row justify-around">
-                            <div class="row" v-for="c in control" :key="'control-' + c.key">
-                                <span class="q-mr-sm">{{ c.key }}</span>
-                                <LED :state="c.state" :size="24" />
+                            <div class="row" v-for="f in flags" :key="'flag-' + f.key">
+                                <span class="q-mr-sm">{{ f.key }}</span>
+                                <LED :state="f.state" :size="24" />
                             </div>
                         </div>
                     </BoxWrapper>
+
+                    <!-- Control Unit -->
+                    <BoxWrapper title="Unidade de Controle">
+                        <div class="row justify-around">
+                            <div class="row" v-for="c in control" :key="'control-' + c.key">
+                                <span class="q-mr-sm">{{ c.key }}</span>
+                                <LED :state="c.state" :size="24" color="red" />
+                            </div>
+                        </div>
+                    </BoxWrapper>
+
+                    <div>t{{ computer.controlTime }}</div>
+                    <span class="row items-center"><span class="q-mr-xs">Clock:</span><LED :state="Boolean(clock.state)" :size="24" color="blue" /></span>
+                    <div>{{ clock.history }}</div>
 
                     <!-- Simulation -->
                     <BoxWrapper title="Simulação">
@@ -45,15 +77,15 @@
                             <div class="col-4"><q-btn class="full-width" color="negative" icon="power_settings_new" label="RESET" /></div>
                             <div class="col-4"><q-btn class="full-width" color="red" icon="radio_button_checked" label="STOP (HLT)" /></div>
                             <div class="col-4"><q-btn class="full-width" color="secondary" icon="restore" label="CLEAR" /></div>
-                            <div class="col-4"><q-btn @click="next" class="full-width" color="primary" icon="redo" label="NEXT (INSTRUCTION)" /></div>
-                            <div class="col-4"><q-btn @click="next" class="full-width" color="primary" icon="redo" label="NEXT (CLOCK)" /></div>
-                            <div class="col-4"><q-btn class="full-width" color="primary" icon="autorenew" label="NEXT (AUTO)" /></div>
+                            <div class="col-4"><q-btn @click="nextInstruction" class="full-width" color="primary" icon="redo" label="NEXT (INSTRUCTION)" /></div>
+                            <div class="col-4"><q-btn @click="nextTick" class="full-width" color="primary" icon="redo" label="NEXT (CLOCK)" /></div>
+                            <div class="col-4"><q-btn @click="nextUntilHLT" class="full-width" color="primary" icon="autorenew" label="NEXT (AUTO)" /></div>
                         </div>
 
                         <!-- Clock Frequency -->
                         <div class="column">
                             <div class="row items-center">
-                                <span class="q-mr-sm">Clock Frequency (ms) {{ clock }}</span>
+                                <span class="q-mr-sm">Clock Frequency (ms) {{ clock.frequency }}</span>
                                 <q-badge rounded>
                                     <span class="help">?</span>
                                     <q-tooltip anchor="center right" self="center left" :offset="[4, 4]">
@@ -61,12 +93,12 @@
                                     </q-tooltip>
                                 </q-badge>
                             </div>
-                            <q-slider v-model="clock" :min="0" :max="5000" :step="50" label />
+                            <q-slider v-model="clock.frequency" :min="0" :max="5000" :step="50" label />
                         </div>
 
                         <!-- statistics -->
                         <div class="column">
-                            <span class="row items-center"><span class="q-mr-xs">HLT:</span><LED :state="computer.clockHLT" :size="16" /></span>
+                            <!--<span class="row items-center"><span class="q-mr-xs">HLT:</span><LED :state="computer.clockHLT" :size="16" /></span>-->
                             <span>Acessos: <q-badge color="primary">{{ computer.counter.accesses }}</q-badge></span>
                             <span>Leituras: <q-badge color="primary">{{ computer.counter.reads }}</q-badge></span>
                             <span>Escritas: <q-badge color="primary">{{ computer.counter.writes }}</q-badge></span>
@@ -105,6 +137,7 @@ import LED from 'components/LED.vue'
 import CanvasArchitecture from 'components/CanvasArchitecture.vue'
 import DialogSave from 'components/DialogSave.vue'
 import DialogLoad from 'components/DialogLoad.vue'
+import Clock from '../clock.js'
 import Neander from '../neander.js'
 import { saveBlob, intArrayToMem, intArrayToHexdump, partition } from '../utils.js'
 import { useConfigStore } from 'stores/config.js'
@@ -162,35 +195,61 @@ export default defineComponent({
     components: { MemoryTable, DigitalSegment, BoxWrapper, LED, CanvasArchitecture, DialogSave, DialogLoad },
     data: () => ({
         arch: 'Neander',
-        computer: new Neander(new Array(256).fill(0)),
+        clock: null,
+        computer: null,
         // sim
-        clock: 1000,
         baseProgram: 'decimal',
-        baseData: 'decimal'
+        baseData: 'decimal',
+        //
+        T0HLT: false
     }),
     setup () {
         const configStore = useConfigStore()
         return { columnsProgram, columnsData, configStore }
+    },
+    created () {
+        this.clock = new Clock(this.clockCallback)
+        this.computer = new Neander(new Array(256).fill(0), this.computerCallback)
     },
     computed: {
         ramRows () {
             const a = this.computer.mnemonics()
             return (this.computer.RAM || []).map((d, i) => ({ data: d, address: i, p: i === this.computer.PC, mnemonic: a[i] }))
         },
+        flags () {
+            return Object.keys(this.computer.flags).map(k => ({ key: k, state: Boolean(this.computer.flags[k]) }))
+        },
         control () {
-            return this.computer.control()
+            return Object.keys(this.computer.controlUnit).map(k => ({ key: k, state: Boolean(this.computer.controlUnit[k]) }))
         },
         instructions () {
-            const o = Neander.instructions()
+            const o = this.computer.instructions
             return Object.keys(o).map(k => ({ value: k * 1, label: o[k] }))
         }
     },
     methods: {
+        clockCallback () {
+            this.computer.next()
+        },
+        computerCallback (event) {
+            if (event === 'HLT') this.clock.setMode(0)
+            if (event === 'T0' && this.T0HLT) {
+                this.clock.setMode(0)
+                this.T0HLT = false
+            }
+        },
+        nextTick () {
+            this.clock.trigger()
+        },
+        nextInstruction () {
+            this.clock.setMode(1)
+            this.T0HLT = true
+        },
+        nextUntilHLT () {
+            this.clock.setMode(1)
+        },
         updateRow (index, value) {
             this.computer.RAM = this.computer.RAM.map((d, i) => i === index ? value : d)
-        },
-        next () {
-            this.computer.next()
         },
         save () {
             this.$refs.dialogsave.call()

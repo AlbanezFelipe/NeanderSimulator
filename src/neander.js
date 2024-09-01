@@ -1,21 +1,44 @@
 export default class Neander {
-    constructor (RAM) {
+    constructor (RAM, eventCallback) {
+        // Memory
         this.RAM = RAM
+
+        // Registers
+        this.MDR = 0
+        this.MAR = 0
         this.PC = 0
         this.ACC = 0
-        this.RI = [0]
-        this.BP = Math.max(RAM.length - 1, 0)
-        this.clockHLT = false
-        this.counter = {
-            accesses: 0,
-            reads: 0,
-            writes: 0,
-            instructions: 0
-        }
-    }
+        this.RI = 0
 
-    static instructions () {
-        return {
+        // Control Unit bits
+        this.controlUnit = {
+            MR:  0, // Memory Read
+            MW:  0, // Memory Write
+            LMA: 0, // Load Memory Address
+            LMD: 0, // Load Memory Data
+            SA:  0, // Select Address
+            IC:  0, // Increment counter
+            LC:  0, // Load counter
+            LI:  0, // Load Instruction
+            LA:  0, // Load accumulator
+            LF:  0, // Load Flags
+            ADD: 0, // ALU ADD
+            AND: 0, // ALU AND
+            OR:  0, // ALU OR
+            NOT: 0, // ALU NOT
+            LDA: 0, // ALU LDA(Y)
+            HLT: 0, // Halt
+            T0:  0  // Go to T0 (reset control timing counter)
+        }
+
+        // ALU Flags bits
+        this.flags = {
+            N: 0,
+            Z: 0
+        }
+
+        // Instructions Map
+        this.instructions = {
             0: 'NOP',
             16: 'STA',
             32: 'LDA',
@@ -28,21 +51,23 @@ export default class Neander {
             160: 'JZ',
             240: 'HLT'
         }
-    }
 
-    static getInstruction (n) {
-        return (Neander.instructions())[n] || 'NOP'
-    }
+        // Unit control timing counter
+        this.controlTime = 0
 
-    control () {
-        return [
-            { key: 'N', state: this.ACC < 0 },
-            { key: 'Z', state: this.ACC === 0 }
-        ]
-    }
+        // Breakpoint value
+        this.BP = Math.max(RAM.length - 1, 0)
 
-    mnemonics () {
-        return this.RAM.map((n, i, arr) => [16, 32, 48, 64, 80, 128, 144, 160].includes(arr[i - 1]) ? `[${n}]` : Neander.getInstruction(n))
+        // History counter
+        this.counter = {
+            accesses: 0,
+            reads: 0,
+            writes: 0,
+            instructions: 0
+        }
+
+        // Event callback for emit events with other modules
+        this.eventCallback = eventCallback
     }
 
     read (address) {
@@ -58,67 +83,86 @@ export default class Neander {
         this.counter.writes += 1
     }
 
-    next () {
-        this.RI = [Neander.getInstruction(this.read(this.PC))]
-        this.PC += 1
-        this[this.RI[0]]() // dynamic call
+    decoder (value) {
+        return this.instructions[value] || 'NOP'
+    }
+
+    updateFlags (value) {
+        this.flags = {
+            N: value < 0,
+            Z: value === 0
+        }
+    }
+
+    incrementPC () {
+        const v = this.PC + 1
+        this.PC = v > this.RAM.length - 1 ? 0 : v
+    }
+
+    gotoT0 () {
+        this.controlTime = 0
         this.counter.instructions += 1
-    }
-
-    nextLine () {
-        this.RI = [...this.RI, this.read(this.PC)]
-        this.PC += 1
-    }
-
-    NOP () {
-        // do nothing
-    }
-
-    STA () {
-        this.nextLine()
-        this.write(this.RI[1], this.ACC) // Store
-    }
-
-    LDA () {
-        this.nextLine()
-        this.ACC = this.read(this.RI[1]) // Load
-    }
-
-    ADD () {
-        this.nextLine()
-        this.ACC += this.read(this.RI[1]) // ADD
-    }
-
-    OR () {
-        this.nextLine()
-        this.ACC = this.read(this.RI[1]) | this.ACC
-    }
-
-    AND () {
-        this.nextLine()
-        this.ACC = this.read(this.RI[1]) & this.ACC
-    }
-
-    NOT () {
-        this.ACC = ~this.ACC
-    }
-
-    JMP () {
-        this.nextLine()
-        this.PC = this.RI[1]
-    }
-
-    JN () {
-        this.nextLine()
-        if (this.ACC < 0) this.PC = this.RI[1]
-    }
-
-    JZ () {
-        this.nextLine()
-        if (this.ACC === 0) this.PC = this.RI[1]
+        this.eventCallback('T0')
     }
 
     HLT () {
-        this.clockHLT = true
+        this.eventCallback('HLT')
+    }
+
+    setControlUnit (data) {
+        this.controlUnit = Object.keys(this.controlUnit).reduce((o, k) => ({ ...o, [k]: +data.includes(k) }), {})
+    }
+
+    getMicroInstruction () {
+        // from t0 to t2 (fetch)
+        if (this.controlTime < 3) return this.controlTime === 0 ? ['LMA'] : (this.controlTime === 1 ? ['MR', 'IC'] : ['LI'])
+
+        // from t3 to t7 (execution)
+        const timingMicrocodes = {
+            NOP: [['T0']],
+            STA: [['LMA'], ['MR', 'IC'], ['SA', 'LMA'], ['LMD'], ['MW', 'T0']],
+            LDA: [['LMA'], ['MR', 'IC'], ['SA', 'LMA'], ['MR'], ['LDA', 'LA', 'LF', 'T0']],
+            ADD: [['LMA'], ['MR', 'IC'], ['SA', 'LMA'], ['MR'], ['ADD', 'LA', 'LF', 'T0']],
+            OR:  [['LMA'], ['MR', 'IC'], ['SA', 'LMA'], ['MR'], ['OR', 'LA', 'LF', 'T0']],
+            AND: [['LMA'], ['MR', 'IC'], ['SA', 'LMA'], ['MR'], ['AND', 'LA', 'LF', 'T0']],
+            NOT: [['NOT', 'LA', 'LF', 'T0']],
+            JMP: [['LMA'], ['MR'], ['LC', 'T0']],
+            JN: this.flags.N ? [['LMA'], ['MR'], ['LC']] : [['IC', 'T0']],
+            JZ: this.flags.Z ? [['LMA'], ['MR'], ['LC']] : [['IC', 'T0']],
+            HLT: [['HLT', 'T0']]
+        }
+        return timingMicrocodes[this.decoder(this.RI)][this.controlTime - 3]
+    }
+
+    runMicroInstruction () {
+        if (this.controlUnit.LMA) { this.MAR = this.controlUnit.SA ? this.MDR : this.PC }
+        if (this.controlUnit.MR)  { this.MDR = this.read(this.MAR) }
+        if (this.controlUnit.MW)  { this.write(this.MAR, this.MDR) }
+        if (this.controlUnit.LMD) { this.MDR = this.ACC }
+        if (this.controlUnit.IC)  { this.incrementPC() }
+        if (this.controlUnit.LC)  { this.PC = this.MDR }
+        if (this.controlUnit.LI)  { this.RI = this.MDR }
+
+        let ALU = 0
+        if (this.controlUnit.ADD) { ALU = this.ACC + this.MDR }
+        if (this.controlUnit.AND) { ALU = this.ACC & this.MDR }
+        if (this.controlUnit.OR)  { ALU = this.ACC | this.MDR }
+        if (this.controlUnit.NOT) { ALU = ~this.ACC }
+        if (this.controlUnit.LDA) { ALU = this.MDR }
+
+        if (this.controlUnit.LA) { this.ACC = ALU }
+        if (this.controlUnit.LF) { this.updateFlags(ALU) }
+
+        if (this.controlUnit.T0) { this.gotoT0() } else { this.controlTime += 1 }
+        if (this.controlUnit.HLT) { this.HLT() }
+    }
+
+    next () {
+        this.setControlUnit(this.getMicroInstruction())
+        this.runMicroInstruction()
+    }
+
+    mnemonics () {
+        return this.RAM.map((n, i, arr) => [16, 32, 48, 64, 80, 128, 144, 160].includes(arr[i - 1]) ? `[${n}]` : this.decoder(n))
     }
 }

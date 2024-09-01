@@ -1,15 +1,25 @@
 <template>
-    <div :class="'led-' + (state ? 'on' : 'off')" :style="`width: ${size}px; height: ${size}px`"></div>
+    <div :class="`led-${state ? 'on' : 'off'} ${color}`" :style="`width: ${size}px; height: ${size}px`"></div>
 </template>
 
 <style lang="stylus">
 
-    display_color = #2dd82e
+    red_color = #ff0000
+    green_color = #2dd82e
+    blue_color = #0066a3
+
+    .red
+        background-color red_color
+
+    .green
+        background-color green_color
+
+    .blue
+        background-color blue_color
 
     .led-on,
     .led-off
         border-radius 50%
-        background-color display_color
         margin 0 1px
         border 1px solid black
 
@@ -30,6 +40,10 @@ export default defineComponent({
         size: {
             type: Number,
             default: 8
+        },
+        color: {
+            type: String,
+            default: 'green'
         }
     }
 })

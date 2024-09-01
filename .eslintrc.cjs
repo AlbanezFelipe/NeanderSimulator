@@ -72,6 +72,8 @@ module.exports = {
     'prefer-promise-reject-errors': 'off',
 
     'indent': ['error', 4],
+    'no-multi-spaces': 'off',
+    'key-spacing': 'off',
 
     // allow debugger during development only
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'

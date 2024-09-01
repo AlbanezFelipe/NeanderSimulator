@@ -33,6 +33,7 @@
             :columns="columns"
             :rows-per-page-options="[0]"
             hide-bottom
+            virtual-scroll
         >
             <template v-slot:body-cell-p="props">
                 <q-td :props="props">
