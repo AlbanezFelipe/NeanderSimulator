@@ -48,6 +48,10 @@ module.exports = configure(function (/* ctx */) {
                 node: 'node20'
             },
 
+            extendViteConf (viteConf) {
+                viteConf.base = ''
+            },
+
             vueRouterMode: 'hash', // available values: 'hash', 'history'
             // vueRouterBase,
             // vueDevtools,
