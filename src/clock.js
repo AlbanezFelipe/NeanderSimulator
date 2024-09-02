@@ -1,4 +1,4 @@
-const historyLimit = 50
+const historyLimit = 100
 
 export default class Clock {
     constructor (callback) {
@@ -31,7 +31,7 @@ export default class Clock {
         this.setPoint()
         this.state = +(!this.state)
         if (this.state) this.callback()
-        if (this.mode === 1 || (this.state === 1 && this.mode === 0)) setTimeout(() => { this.tick() }, this.frequency)
+        if (this.mode === 1 || (this.state === 1 && this.mode === 0)) setTimeout(() => { this.tick() }, this.frequency || 1)
     }
 
     trigger () {

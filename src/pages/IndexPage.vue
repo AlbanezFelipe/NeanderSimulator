@@ -66,16 +66,18 @@
                         </div>
                     </BoxWrapper>
 
+                    <CanvasClock :clock="clock" />
+
                     <div>t{{ computer.controlTime }}</div>
                     <span class="row items-center"><span class="q-mr-xs">Clock:</span><LED :state="Boolean(clock.state)" :size="24" color="blue" /></span>
-                    <div>{{ clock.history }}</div>
+                    <!-- <div>{{ clock.history }}</div> -->
 
                     <!-- Simulation -->
                     <BoxWrapper title="Simulação">
                         <!-- Actions -->
                         <div class="row q-col-gutter-sm q-mb-sm" style="min-width: 100%">
-                            <div class="col-4"><q-btn class="full-width" color="negative" icon="power_settings_new" label="RESET" /></div>
-                            <div class="col-4"><q-btn class="full-width" color="red" icon="radio_button_checked" label="STOP (HLT)" /></div>
+                            <div class="col-4"><q-btn @click="reset" class="full-width" color="negative" icon="power_settings_new" label="RESET" /></div>
+                            <div class="col-4"><q-btn @click="stop" class="full-width" color="negative" icon="radio_button_checked" label="STOP (HLT)" /></div>
                             <div class="col-4"><q-btn class="full-width" color="secondary" icon="restore" label="CLEAR" /></div>
                             <div class="col-4"><q-btn @click="nextInstruction" class="full-width" color="primary" icon="redo" label="NEXT (INSTRUCTION)" /></div>
                             <div class="col-4"><q-btn @click="nextTick" class="full-width" color="primary" icon="redo" label="NEXT (CLOCK)" /></div>
@@ -85,7 +87,7 @@
                         <!-- Clock Frequency -->
                         <div class="column">
                             <div class="row items-center">
-                                <span class="q-mr-sm">Clock Frequency (ms) {{ clock.frequency }}</span>
+                                <span class="q-mr-sm">Clock Frequency (ms) {{ clock.frequency }}ms {{ (1000 / clock.frequency).toFixed(3) }}Hz</span>
                                 <q-badge rounded>
                                     <span class="help">?</span>
                                     <q-tooltip anchor="center right" self="center left" :offset="[4, 4]">
@@ -135,6 +137,7 @@ import DigitalSegment from 'components/DigitalSegment.vue'
 import BoxWrapper from 'components/BoxWrapper.vue'
 import LED from 'components/LED.vue'
 import CanvasArchitecture from 'components/CanvasArchitecture.vue'
+import CanvasClock from 'components/CanvasClock.vue'
 import DialogSave from 'components/DialogSave.vue'
 import DialogLoad from 'components/DialogLoad.vue'
 import Clock from '../clock.js'
@@ -192,7 +195,7 @@ const columnsData = [
 
 export default defineComponent({
     name: 'IndexPage',
-    components: { MemoryTable, DigitalSegment, BoxWrapper, LED, CanvasArchitecture, DialogSave, DialogLoad },
+    components: { MemoryTable, DigitalSegment, BoxWrapper, LED, CanvasArchitecture, CanvasClock, DialogSave, DialogLoad },
     data: () => ({
         arch: 'Neander',
         clock: null,
@@ -247,6 +250,13 @@ export default defineComponent({
         },
         nextUntilHLT () {
             this.clock.setMode(1)
+        },
+        stop () {
+            this.clock.setMode(0)
+        },
+        reset () {
+            this.clock.setMode(0)
+            this.computer = new Neander(this.computer.RAM, this.computerCallback)
         },
         updateRow (index, value) {
             this.computer.RAM = this.computer.RAM.map((d, i) => i === index ? value : d)
