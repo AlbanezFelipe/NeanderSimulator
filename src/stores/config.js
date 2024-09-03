@@ -6,7 +6,8 @@ export const useConfigStore = defineStore('config', {
     state: () => ({
         showTableProgram: b(localStorage.showTableProgram),
         showTableData: b(localStorage.showTableData),
-        showCanvasDiagram: b(localStorage.showCanvasDiagram)
+        showCanvasDiagram: b(localStorage.showCanvasDiagram),
+        RAMSaved: localStorage.RAM && JSON.parse(localStorage.RAM)
     }),
     actions: {
         toggleTableProgram () {
@@ -20,6 +21,10 @@ export const useConfigStore = defineStore('config', {
         toggleCanvasDiagram () {
             this.showCanvasDiagram = !this.showCanvasDiagram
             localStorage.showCanvasDiagram = +this.showCanvasDiagram
+        },
+        saveRAM (RAM) {
+            localStorage.RAM = JSON.stringify(RAM)
+            this.RAMSaved = RAM
         }
     }
 })

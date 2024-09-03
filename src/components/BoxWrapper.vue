@@ -1,6 +1,6 @@
 <template>
     <div class="relative-position q-mt-md q-py-md q-px-md" style="border: 1px solid black; border-radius: 16px">
-        <span class="title-box">{{ title }}</span>
+        <span class="row title-box">{{ title }}<slot name="after"></slot></span>
         <slot></slot>
     </div>
 </template>

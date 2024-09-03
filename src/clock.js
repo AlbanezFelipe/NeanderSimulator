@@ -23,6 +23,7 @@ export default class Clock {
     }
 
     setMode (mode) {
+        if (this.mode === mode) return
         this.mode = mode
         if (mode === 1) this.tick()
     }

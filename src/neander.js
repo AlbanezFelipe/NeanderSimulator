@@ -9,6 +9,7 @@ export default class Neander {
         this.PC = 0
         this.ACC = 0
         this.RI = 0
+        this.OUT = 0
 
         // Control Unit bits
         this.controlUnit = {
@@ -27,6 +28,7 @@ export default class Neander {
             OR:  0, // ALU OR
             NOT: 0, // ALU NOT
             LDA: 0, // ALU LDA(Y)
+            LO:  0, // Load Out
             HLT: 0, // Halt
             T0:  0  // Go to T0 (reset control timing counter)
         }
@@ -49,6 +51,7 @@ export default class Neander {
             128: 'JMP',
             144: 'JN',
             160: 'JZ',
+            200: 'OUT',
             240: 'HLT'
         }
 
@@ -89,7 +92,7 @@ export default class Neander {
 
     updateFlags (value) {
         this.flags = {
-            N: value < 0,
+            N: !!(value & 128),
             Z: value === 0
         }
     }
@@ -127,11 +130,12 @@ export default class Neander {
             AND: [['LMA'], ['MR', 'IC'], ['SA', 'LMA'], ['MR'], ['AND', 'LA', 'LF', 'T0']],
             NOT: [['NOT', 'LA', 'LF', 'T0']],
             JMP: [['LMA'], ['MR'], ['LC', 'T0']],
-            JN: this.flags.N ? [['LMA'], ['MR'], ['LC']] : [['IC', 'T0']],
-            JZ: this.flags.Z ? [['LMA'], ['MR'], ['LC']] : [['IC', 'T0']],
+            JN: this.flags.N ? [['LMA'], ['MR'], ['LC', 'T0']] : [['IC', 'T0']],
+            JZ: this.flags.Z ? [['LMA'], ['MR'], ['LC', 'T0']] : [['IC', 'T0']],
+            OUT: [['LO', 'T0']],
             HLT: [['HLT', 'T0']]
         }
-        return timingMicrocodes[this.decoder(this.RI)][this.controlTime - 3]
+        return timingMicrocodes[this.decoder(this.RI)][this.controlTime - 3] /// !!! || T0
     }
 
     runMicroInstruction () {
@@ -142,12 +146,13 @@ export default class Neander {
         if (this.controlUnit.IC)  { this.incrementPC() }
         if (this.controlUnit.LC)  { this.PC = this.MDR }
         if (this.controlUnit.LI)  { this.RI = this.MDR }
+        if (this.controlUnit.LO)  { this.OUT = this.ACC }
 
         let ALU = 0
-        if (this.controlUnit.ADD) { ALU = this.ACC + this.MDR }
+        if (this.controlUnit.ADD) { ALU = (this.ACC + this.MDR) & 255 }
         if (this.controlUnit.AND) { ALU = this.ACC & this.MDR }
         if (this.controlUnit.OR)  { ALU = this.ACC | this.MDR }
-        if (this.controlUnit.NOT) { ALU = ~this.ACC }
+        if (this.controlUnit.NOT) { ALU = this.ACC ^ 255 }
         if (this.controlUnit.LDA) { ALU = this.MDR }
 
         if (this.controlUnit.LA) { this.ACC = ALU }
@@ -164,5 +169,9 @@ export default class Neander {
 
     mnemonics () {
         return this.RAM.map((n, i, arr) => [16, 32, 48, 64, 80, 128, 144, 160].includes(arr[i - 1]) ? `[${n}]` : this.decoder(n))
+    }
+
+    resetCounter () {
+        this.counter = { accesses: 0, reads: 0, writes: 0, instructions: 0 }
     }
 }

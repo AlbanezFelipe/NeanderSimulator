@@ -16,34 +16,46 @@
                         <q-select class="full-width" outlined v-model="arch" :options="['Neander', 'Ahmes']" label="Arquitetura" />
                     </div>
 
-                    <!-- Accumulator -->
-                    <div class="row justify-between items-center q-mb-sm">
-                        <span>Acumulador (ACC)</span>
-                        <DigitalSegment @update="computer.ACC = $event" :value="computer.ACC" />
-                    </div>
+                    <div class="row q-col-gutter-sm">
 
-                    <!-- Program Counter -->
-                    <div class="row justify-between items-center q-mb-sm">
-                        <span>Contador de Programa (PC)</span>
-                        <DigitalSegment @update="computer.PC = $event" :value="computer.PC" />
-                    </div>
+                        <!-- Accumulator -->
+                        <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-between items-center q-mb-sm">
+                            <div class="column items-center">
+                                <span>ACC</span>
+                                <span>(2's): {{ complement2(computer.ACC) }}</span>
+                            </div>
+                            <DigitalSegment @update="computer.ACC = $event; computer.updateFlags($event)" :value="computer.ACC" />
+                        </div>
 
-                     <!-- MDR -->
-                    <div class="row justify-between items-center q-mb-sm">
-                        <span>MDR</span>
-                        <DigitalSegment @update="computer.MDR = $event" :value="computer.MDR" />
-                    </div>
+                        <!-- Program Counter -->
+                        <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
+                            <span>PC</span>
+                            <DigitalSegment @update="computer.PC = $event" :value="computer.PC" />
+                        </div>
 
-                     <!-- MAR -->
-                    <div class="row justify-between items-center q-mb-sm">
-                        <span>MAR</span>
-                        <DigitalSegment @update="computer.MAR = $event" :value="computer.MAR" />
-                    </div>
+                        <!-- OUT -->
+                        <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
+                            <span>OUT</span>
+                            <DigitalSegment @update="computer.OUT = $event" :value="computer.OUT" />
+                        </div>
 
-                     <!-- RI -->
-                    <div class="row justify-between items-center q-mb-sm">
-                        <span>RI</span>
-                        <DigitalSegment @update="computer.RI = $event" :value="computer.RI" />
+                        <!-- MDR -->
+                        <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
+                            <span>MDR</span>
+                            <DigitalSegment @update="computer.MDR = $event" :value="computer.MDR" />
+                        </div>
+
+                        <!-- MAR -->
+                        <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
+                            <span>MAR</span>
+                            <DigitalSegment @update="computer.MAR = $event" :value="computer.MAR" />
+                        </div>
+
+                        <!-- RI -->
+                        <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
+                            <span>RI</span>
+                            <DigitalSegment @update="computer.RI = $event" :value="computer.RI" />
+                        </div>
                     </div>
 
                     <!-- Flags -->
@@ -59,17 +71,32 @@
                     <!-- Control Unit -->
                     <BoxWrapper title="Unidade de Controle">
                         <div class="row justify-around">
-                            <div class="row" v-for="c in control" :key="'control-' + c.key">
-                                <span class="q-mr-sm">{{ c.key }}</span>
+                            <div class="column flex-center row q-mr-md" v-for="c in control" :key="'control-' + c.key">
+                                <span>{{ c.key }}</span>
                                 <LED :state="c.state" :size="24" color="red" />
                             </div>
                         </div>
                     </BoxWrapper>
 
-                    <CanvasClock :clock="clock" />
+                    <BoxWrapper title="Clock">
+                        <template v-slot:after>
+                            <div class="relative-position" style="width: 16px; margin-left: 5px">
+                                <LED class="absolute-center" :state="Boolean(clock.state)" :size="16" color="blue" />
+                            </div>
+                        </template>
+                        <CanvasClock :clock="clock" v-model:frequency="clock.frequency" />
+                    </BoxWrapper>
 
-                    <div>t{{ computer.controlTime }}</div>
-                    <span class="row items-center"><span class="q-mr-xs">Clock:</span><LED :state="Boolean(clock.state)" :size="24" color="blue" /></span>
+                    <BoxWrapper title="Temporização de Instrução">
+                        <div class="column flex-center">
+                            <span>T{{ computer.controlTime }}</span>
+                            <div class="row">
+                                <div class="q-mt-xs" v-for="(b, i) in ([...(computer.controlTime >>> 0).toString(2).padStart(3, '0')].map(n => !!(n * 1)))" :key="'T-' + i">
+                                    <LED :state="b" />
+                                </div>
+                            </div>
+                        </div>
+                    </BoxWrapper>
                     <!-- <div>{{ clock.history }}</div> -->
 
                     <!-- Simulation -->
@@ -78,40 +105,26 @@
                         <div class="row q-col-gutter-sm q-mb-sm" style="min-width: 100%">
                             <div class="col-4"><q-btn @click="reset" class="full-width" color="negative" icon="power_settings_new" label="RESET" /></div>
                             <div class="col-4"><q-btn @click="stop" class="full-width" color="negative" icon="radio_button_checked" label="STOP (HLT)" /></div>
-                            <div class="col-4"><q-btn class="full-width" color="secondary" icon="restore" label="CLEAR" /></div>
+                            <div class="col-4"><q-btn @click="clear" class="full-width" color="secondary" icon="restore" label="CLEAR" /></div>
                             <div class="col-4"><q-btn @click="nextInstruction" class="full-width" color="primary" icon="redo" label="NEXT (INSTRUCTION)" /></div>
                             <div class="col-4"><q-btn @click="nextTick" class="full-width" color="primary" icon="redo" label="NEXT (CLOCK)" /></div>
                             <div class="col-4"><q-btn @click="nextUntilHLT" class="full-width" color="primary" icon="autorenew" label="NEXT (AUTO)" /></div>
                         </div>
 
-                        <!-- Clock Frequency -->
-                        <div class="column">
-                            <div class="row items-center">
-                                <span class="q-mr-sm">Clock Frequency (ms) {{ clock.frequency }}ms {{ (1000 / clock.frequency).toFixed(3) }}Hz</span>
-                                <q-badge rounded>
-                                    <span class="help">?</span>
-                                    <q-tooltip anchor="center right" self="center left" :offset="[4, 4]">
-                                        Duration in milliseconds of clock tick
-                                    </q-tooltip>
-                                </q-badge>
-                            </div>
-                            <q-slider v-model="clock.frequency" :min="0" :max="5000" :step="50" label />
-                        </div>
-
                         <!-- statistics -->
-                        <div class="column">
+                        <div class="row">
                             <!--<span class="row items-center"><span class="q-mr-xs">HLT:</span><LED :state="computer.clockHLT" :size="16" /></span>-->
-                            <span>Acessos: <q-badge color="primary">{{ computer.counter.accesses }}</q-badge></span>
-                            <span>Leituras: <q-badge color="primary">{{ computer.counter.reads }}</q-badge></span>
-                            <span>Escritas: <q-badge color="primary">{{ computer.counter.writes }}</q-badge></span>
-                            <span>Instruções: <q-badge color="primary">{{ computer.counter.instructions }}</q-badge></span>
+                            <span class="q-mr-lg">Acessos: <q-badge color="primary">{{ computer.counter.accesses }}</q-badge></span>
+                            <span class="q-mr-lg">Leituras: <q-badge color="primary">{{ computer.counter.reads }}</q-badge></span>
+                            <span class="q-mr-lg">Escritas: <q-badge color="primary">{{ computer.counter.writes }}</q-badge></span>
+                            <span class="q-mr-lg">Instruções: <q-badge color="primary">{{ computer.counter.instructions }}</q-badge></span>
                         </div>
                     </BoxWrapper>
 
                     <!-- Mnemonics -->
                     <BoxWrapper title="Mnemônicos">
                         <div class="row q-col-gutter-sm" style="min-width: 100%">
-                            <div v-for="i in instructions" :key="'instructions-' + i.value" class="col-3 text-center"><span class="text-bold">{{ i.label }} {{ i.value }}</span></div>
+                            <div v-for="i in instructions" :key="'instructions-' + i.value" class="col-xs-3 col-sm-2 col-md-2 col-lg-1 text-center"><span class="text-bold">{{ i.label }} {{ i.value }}</span></div>
                         </div>
                     </BoxWrapper>
                 </div>
@@ -193,6 +206,8 @@ const columnsData = [
     }
 ]
 
+const complement2 = n => n & 128 ? -1 * ((n ^ 255) + 1) : n
+
 export default defineComponent({
     name: 'IndexPage',
     components: { MemoryTable, DigitalSegment, BoxWrapper, LED, CanvasArchitecture, CanvasClock, DialogSave, DialogLoad },
@@ -208,11 +223,11 @@ export default defineComponent({
     }),
     setup () {
         const configStore = useConfigStore()
-        return { columnsProgram, columnsData, configStore }
+        return { columnsProgram, columnsData, configStore, complement2 }
     },
     created () {
         this.clock = new Clock(this.clockCallback)
-        this.computer = new Neander(new Array(256).fill(0), this.computerCallback)
+        this.computer = new Neander(this.configStore.RAMSaved || new Array(256).fill(0), this.computerCallback)
     },
     computed: {
         ramRows () {
@@ -258,8 +273,12 @@ export default defineComponent({
             this.clock.setMode(0)
             this.computer = new Neander(this.computer.RAM, this.computerCallback)
         },
+        clear () {
+            this.computer.resetCounter()
+        },
         updateRow (index, value) {
             this.computer.RAM = this.computer.RAM.map((d, i) => i === index ? value : d)
+            this.configStore.saveRAM(this.computer.RAM)
         },
         save () {
             this.$refs.dialogsave.call()
@@ -280,6 +299,7 @@ export default defineComponent({
                 // mem
                 if (arr[0] + arr[1] === 41031) {
                     this.computer.RAM = [...arr.slice(2)]
+                    this.configStore.saveRAM(this.computer.RAM) // !!!
                     return
                 }
 
@@ -288,6 +308,7 @@ export default defineComponent({
                 // Hexdump
                 if (txt.slice(0, 8) === '034e4452') {
                     this.computer.RAM = partition(txt.slice(8), 4).map(n => parseInt(n.slice(0, 2), '16'))
+                    this.configStore.saveRAM(this.computer.RAM) // !!!
                     // return
                 }
             })
