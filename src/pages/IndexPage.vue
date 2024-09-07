@@ -13,7 +13,7 @@
 
                     <!-- Architecture -->
                     <div class="row items-center q-mb-sm">
-                        <q-select class="full-width" outlined v-model="arch" :options="['Neander', 'Ahmes']" label="Arquitetura" />
+                        <q-select class="full-width" outlined v-model="arch" :options="['Neander']" label="Arquitetura" />
                     </div>
 
                     <div class="row q-col-gutter-sm">

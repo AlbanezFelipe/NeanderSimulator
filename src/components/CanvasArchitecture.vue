@@ -1,5 +1,5 @@
 <template>
-    <div style="border: 1px solid red">
+    <div>
         <canvas ref="architecture" width="400" height="800">
             Sorry, your browser does not support canvas.
         </canvas>
@@ -84,14 +84,14 @@ const drawSelector = (ctx, x, y, width, height, pivotX, pivotY) => {
     return { ...coord, width, height }
 }
 
-const drawArrow = (ctx, startX, startY, endX, endY, type = 'arrow', state) => {
+const drawArrow = (ctx, startX, startY, endX, endY, head = 'arrow', state) => {
     if (endX === undefined) endX = startX
     if (endY === undefined) endY = startY
     // line
     ctx.lineJoin = 'miter'
-    ctx.lineWidth = 1
-    // ctx.fillStyle = !state ? '#ffff00' : '#cccccc'
-    // ctx.strokeStyle = !state ? '#ffff00' : '#cccccc'
+    ctx.lineWidth = state ? 3 : 1
+    ctx.fillStyle = state ? '#0000ff' : '#000000'
+    ctx.strokeStyle = state ? '#0000ff' : '#000000'
     ctx.beginPath()
     ctx.moveTo(startX, startY)
     ctx.lineTo(endX, endY)
@@ -102,10 +102,10 @@ const drawArrow = (ctx, startX, startY, endX, endY, type = 'arrow', state) => {
     const dotLength = 2.5
 
     // arrow
-    if (!type) return
+    if (!head) return
 
     // dot
-    if (type === 'dot') {
+    if (head === 'dot') {
         ctx.beginPath()
         ctx.arc(endX, endY, dotLength, 0, 2 * Math.PI)
         ctx.fill()
@@ -129,6 +129,9 @@ const drawArrow = (ctx, startX, startY, endX, endY, type = 'arrow', state) => {
     }
     // ctx.closePath()
     ctx.fill()
+    ctx.lineWidth = 1
+    ctx.fillStyle = '#000000'
+    ctx.strokeStyle = '#000000'
 }
 
 const drawFlags = (ctx, x, y, width, height, pivotX, pivotY, flags) => {
@@ -158,7 +161,7 @@ export default defineComponent({
             const margin = width * 0.1
 
             // draw
-            const MDR = drawRegister(ctx, 'MDR', this.computer.controlUnit.LMD, margin, height - margin, 0, 2)
+            const MDR = drawRegister(ctx, 'MDR', this.computer.controlUnit.LMD || this.computer.controlUnit.MR, margin, height - margin, 0, 2)
             const RAM = drawRegister(ctx, 'RAM', this.computer.controlUnit.MR || this.computer.controlUnit.MW, width / 2, height - margin, 1, 2)
             const MAR = drawRegister(ctx, 'MAR', this.computer.controlUnit.LMA, width - margin, height - margin, 2, 2)
 
@@ -183,19 +186,19 @@ export default defineComponent({
             const FLA = drawFlags(ctx, ALU.x + ALU.width / 12 * 7, DEC.y, 50, 20, 1, 0, ['N', 'Z'])
 
             // MDR --> RAM
-            drawArrow(ctx, MDR.x + MDR.width, MDR.y + MDR.height / 3, RAM.x, RAM.y + RAM.height / 3)
+            drawArrow(ctx, MDR.x + MDR.width, MDR.y + MDR.height / 3, RAM.x, undefined, true, this.computer.controlUnit.MW)
 
             // MDR <-- RAM
-            drawArrow(ctx, RAM.x, RAM.y + RAM.height / 3 * 2, MDR.x + MDR.width, MDR.y + MDR.height / 3 * 2)
+            drawArrow(ctx, RAM.x, RAM.y + RAM.height / 3 * 2, MDR.x + MDR.width, undefined, true, this.computer.controlUnit.MR)
 
             // RAM <-- MAR
-            drawArrow(ctx, MAR.x, MAR.y + MAR.height / 2, RAM.x + RAM.width, RAM.y + RAM.height / 2)
+            drawArrow(ctx, MAR.x, MAR.y + MAR.height / 2, RAM.x + RAM.width, undefined, true, this.computer.controlUnit.MR || this.computer.controlUnit.MW)
 
             // SEL v MAR
-            drawArrow(ctx, SEL.x + SEL.width / 2, SEL.y + SEL.height, MAR.x + MAR.width / 2, MAR.y)
+            drawArrow(ctx, SEL.x + SEL.width / 2, SEL.y + SEL.height, undefined, MAR.y, true, this.computer.controlUnit.LMA)
 
             // PC v SEL
-            drawArrow(ctx, PC.x + PC.width / 4 * 3, PC.y + PC.height, PC.x + PC.width / 4 * 3, SEL.y)
+            drawArrow(ctx, PC.x + PC.width / 4 * 3, PC.y + PC.height, undefined, SEL.y, true, !this.computer.controlUnit.SA && this.computer.controlUnit.LMA)
 
             // MDR Bus
             const MDRBusX = MDR.x + MDR.width / 4 * 3
@@ -204,48 +207,50 @@ export default defineComponent({
             const MDRBusRIX = RI.x + RI.width / 2
             const MDRBusALUY = RI.y + RI.height + 50
             const MDRBusALUX = ALU.x + ALU.width / 4 * 3
-            drawArrow(ctx, MDRBusX, MDR.y, MDRBusX, MDRBusY, false)
-            drawArrow(ctx, MDRBusX, MDRBusY, MDRBusRIX, MDRBusY, 'dot')
-            drawArrow(ctx, MDRBusRIX, MDRBusY, MDRBusEndX, MDRBusY, 'dot')
-            drawArrow(ctx, MDRBusEndX, MDRBusY, MDRBusEndX, PC.y + PC.height)
-            drawArrow(ctx, MDRBusEndX, MDRBusY, MDRBusEndX, SEL.y)
-            drawArrow(ctx, MDRBusRIX, MDRBusY, undefined, MDRBusALUY, 'dot')
-            drawArrow(ctx, MDRBusRIX, MDRBusALUY, undefined, RI.y + RI.height)
-            drawArrow(ctx, MDRBusRIX, MDRBusALUY, MDRBusALUX, undefined, false)
-            drawArrow(ctx, MDRBusALUX, MDRBusALUY, undefined, ALU.y + ALU.height)
+            const ULAState = this.computer.controlUnit.ADD || this.computer.controlUnit.AND || this.computer.controlUnit.OR || this.computer.controlUnit.LDA
+            const firstState = ULAState || this.computer.controlUnit.LI || this.computer.controlUnit.LC || this.computer.controlUnit.SA
+            drawArrow(ctx, MDRBusX, MDR.y, MDRBusX, MDRBusY, false, firstState)
+            drawArrow(ctx, MDRBusX, MDRBusY, MDRBusRIX, MDRBusY, 'dot', firstState)
+            drawArrow(ctx, MDRBusRIX, MDRBusY, MDRBusEndX, MDRBusY, 'dot', this.computer.controlUnit.LC || this.computer.controlUnit.SA)
+            drawArrow(ctx, MDRBusEndX, MDRBusY, MDRBusEndX, PC.y + PC.height, true, this.computer.controlUnit.LC)
+            drawArrow(ctx, MDRBusEndX, MDRBusY, MDRBusEndX, SEL.y, true, this.computer.controlUnit.SA)
+            drawArrow(ctx, MDRBusRIX, MDRBusY, undefined, MDRBusALUY, 'dot', ULAState || this.computer.controlUnit.LI)
+            drawArrow(ctx, MDRBusRIX, MDRBusALUY, undefined, RI.y + RI.height, true, this.computer.controlUnit.LI)
+            drawArrow(ctx, MDRBusRIX, MDRBusALUY, MDRBusALUX, undefined, false, ULAState)
+            drawArrow(ctx, MDRBusALUX, MDRBusALUY, undefined, ALU.y + ALU.height, true, ULAState)
 
-            // MDR ^ ACC
-            drawArrow(ctx, MDR.x + MDR.width / 4, MDR.y, MDR.x + MDR.width / 4, ACC.y + ACC.height)
+            // ACC v MDR
+            drawArrow(ctx, MDR.x + MDR.width / 4, ACC.y + ACC.height, undefined, MDR.y, true, this.computer.controlUnit.LMD)
 
             // ACC ^ ALU(x)
-            drawArrow(ctx, ACC.x + ALU.width / 6, ACC.y, ACC.x + ALU.width / 6, ALU.y + ALU.height)
+            drawArrow(ctx, ACC.x + ALU.width / 6, ACC.y, undefined, ALU.y + ALU.height, true, this.computer.controlUnit.ADD || this.computer.controlUnit.AND || this.computer.controlUnit.OR || this.computer.controlUnit.NOT)
 
             // ACC --> OUT
-            drawArrow(ctx, ACC.x + ACC.width, ACC.y + ACC.height / 2, OUT.x)
+            drawArrow(ctx, ACC.x + ACC.width, ACC.y + ACC.height / 2, OUT.x, undefined, true, this.computer.controlUnit.LO)
 
             // ALU(s) to ACC
-            drawArrow(ctx, ALU.x + ALU.width / 3, ALU.y, undefined, ALU.y - 25, false)
-            drawArrow(ctx, ALU.x + ALU.width / 3, ALU.y - 25, ALU.x - 25, undefined, false)
-            drawArrow(ctx, ALU.x - 25, ALU.y - 25, undefined, ACC.y + ACC.height / 2, false)
-            drawArrow(ctx, ALU.x - 25, ACC.y + ACC.height / 2, ACC.x)
+            drawArrow(ctx, ALU.x + ALU.width / 3, ALU.y, undefined, ALU.y - 25, false, this.computer.controlUnit.LA)
+            drawArrow(ctx, ALU.x + ALU.width / 3, ALU.y - 25, ALU.x - 25, undefined, false, this.computer.controlUnit.LA)
+            drawArrow(ctx, ALU.x - 25, ALU.y - 25, undefined, ACC.y + ACC.height / 2, false, this.computer.controlUnit.LA)
+            drawArrow(ctx, ALU.x - 25, ACC.y + ACC.height / 2, ACC.x, undefined, true, this.computer.controlUnit.LA)
 
             // ALU to Flags
-            drawArrow(ctx, ALU.x + ALU.width / 2, ALU.y, undefined, FLA.y + FLA.height)
-            drawArrow(ctx, ALU.x + ALU.width / 3 * 2, ALU.y, undefined, FLA.y + FLA.height)
+            drawArrow(ctx, ALU.x + ALU.width / 2, ALU.y, undefined, FLA.y + FLA.height, true, this.computer.controlUnit.LF)
+            drawArrow(ctx, ALU.x + ALU.width / 3 * 2, ALU.y, undefined, FLA.y + FLA.height, true, this.computer.controlUnit.LF)
 
             // Flags to Control unit
-            drawArrow(ctx, ALU.x + ALU.width / 2, FLA.y, undefined, CON.y + CON.height)
-            drawArrow(ctx, ALU.x + ALU.width / 3 * 2, FLA.y, undefined, CON.y + CON.height)
+            drawArrow(ctx, ALU.x + ALU.width / 2, FLA.y, undefined, CON.y + CON.height, true, this.computer.controlUnit.LF)
+            drawArrow(ctx, ALU.x + ALU.width / 3 * 2, FLA.y, undefined, CON.y + CON.height, true, this.computer.controlUnit.LF)
 
             // RI ^ Decoder
-            drawArrow(ctx, RI.x + RI.width / 2, RI.y, DEC.x + DEC.width / 2, DEC.y + DEC.height)
+            drawArrow(ctx, RI.x + RI.width / 2, RI.y, DEC.x + DEC.width / 2, DEC.y + DEC.height, true, this.computer.controlUnit.LI)
 
             // Decoder to Control Unit
             const splitX = DEC.x + DEC.width / 2
             const splitY = DEC.y - 80
             const splitEndY = CON.y + CON.height
-            drawArrow(ctx, splitX, DEC.y, undefined, splitY, 'dot')
-            const inst = ['NOP', 'STA', 'LDA', 'ADD', 'AND', 'OR', 'NOT', 'JMP', 'JZ', 'JN', 'OUT', 'HLT']
+            drawArrow(ctx, splitX, DEC.y, undefined, splitY, 'dot', this.computer.controlUnit.LI)
+            const inst = Object.keys(this.computer.instructions)
             // const ll = CON.x + CON.width / 3
             // const lr = CON.x + CON.width
             const s = 18
@@ -254,8 +259,9 @@ export default defineComponent({
                     drawArrow(ctx, splitX, splitY, undefined, splitEndY)
                     return
                 }
-                drawArrow(ctx, splitX + (Math.ceil(i / 2) - 1) * (i % 2 === 0 ? s : -s), splitY, splitX + Math.ceil(i / 2) * (i % 2 === 0 ? s : -s), undefined, i + 2 < inst.length ? 'dot' : false)
-                drawArrow(ctx, splitX + Math.ceil(i / 2) * (i % 2 === 0 ? s : -s), splitY, undefined, splitEndY)
+                const stateInst = this.computer.controlUnit.LI && (v * 1) === this.computer.RI
+                drawArrow(ctx, splitX, splitY, splitX + Math.ceil(i / 2) * (i % 2 === 0 ? s : -s), undefined, i + 2 < inst.length ? 'dot' : false, stateInst)
+                drawArrow(ctx, splitX + Math.ceil(i / 2) * (i % 2 === 0 ? s : -s), splitY, undefined, splitEndY, true, stateInst)
             })
 
             requestAnimationFrame(update)
