@@ -87,16 +87,24 @@
                         <CanvasClock :clock="clock" v-model:frequency="clock.frequency" />
                     </BoxWrapper>
 
-                    <BoxWrapper title="Temporização de Instrução">
-                        <div class="column flex-center">
-                            <span>T{{ computer.controlTime }}</span>
-                            <div class="row">
-                                <div class="q-mt-xs" v-for="(b, i) in ([...(computer.controlTime >>> 0).toString(2).padStart(3, '0')].map(n => !!(n * 1)))" :key="'T-' + i">
-                                    <LED :state="b" />
+                    <div class="row full-width">
+                        <BoxWrapper title="Temporização de Instrução" style="min-width: 262px" class="q-mr-sm">
+                            <div class="column flex-center">
+                                <span>T{{ computer.controlTime }}</span>
+                                <div class="row">
+                                    <div class="q-mt-xs" v-for="(b, i) in ([...(computer.controlTime >>> 0).toString(2).padStart(3, '0')].map(n => !!(n * 1)))" :key="'T-' + i">
+                                        <LED :state="b" />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </BoxWrapper>
+                        </BoxWrapper>
+                        <BoxWrapper title="Instrução" style="min-width: 203.2px; flex-grow: 1">
+                            <div class="row items-center justify-around full-height">
+                                <span>Ciclo: <q-badge color="primary">{{ computer.controlTime < 3 ? 'Fetch' : 'Execution' }}</q-badge></span>
+                                <span>Mnemônico: <q-badge color="primary">{{ computer.controlTime < 3 ? '???' : computer.decoder(computer.RI) }}</q-badge></span>
+                            </div>
+                        </BoxWrapper>
+                    </div>
                     <!-- <div>{{ clock.history }}</div> -->
 
                     <!-- Simulation -->
