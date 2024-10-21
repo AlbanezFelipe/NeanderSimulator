@@ -4,18 +4,18 @@
 
 <style lang="stylus">
 
-    red_color = #ff0000
+    red_color = #ef0307
     green_color = #2dd82e
     blue_color = #0066a3
 
     .red
-        background-color red_color
+        background radial-gradient(farthest-corner at 32% 25%, #ddd 0%, red_color 50%)
 
     .green
-        background-color green_color
+        background radial-gradient(farthest-corner at 32% 25%, #fff 0%, green_color 50%)
 
     .blue
-        background-color blue_color
+        background radial-gradient(farthest-corner at 32% 25%, #fff 0%, blue_color 50%)
 
     .led-on,
     .led-off
@@ -24,7 +24,7 @@
         border 1px solid black
 
     .led-off
-        opacity 0.25
+        background radial-gradient(farthest-corner at 32% 25%, #ccc 0%, #636363 50%)
 </style>
 
 <script>

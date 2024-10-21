@@ -3,7 +3,7 @@
 
 @font-face {
     font-family: 'Seven Segment';
-    src: url('../assets/seven_segment/SevenSegment.ttf');
+    src: url('../assets/seven_segment/DSEG7ClassicMini-Regular.ttf');
     font-weight: normal;
     font-style: normal;
 }
@@ -25,4 +25,11 @@ body {
 .wrapper-title {
     border-radius: 0;
     font-size: 1.2em;
+}
+
+.text-ellipsis {
+    overflow: hidden;
+    max-width: 100%;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
 }

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <canvas ref="architecture" width="400" height="800">
+        <canvas ref="architecture" width="400" :height="height">
             Sorry, your browser does not support canvas.
         </canvas>
     </div>
@@ -8,7 +8,7 @@
 
 <script>
 const width = 400
-const height = 800
+const height = Math.min(800, window.innerHeight - 139)
 
 import { defineComponent } from 'vue'
 // pivot y: top=0  center=1 bottom=2
@@ -210,9 +210,14 @@ const drawFlags = (ctx, x, y, width, height, pivotX, pivotY, flags, state) => {
 export default defineComponent({
     name: 'CanvasArchitecture',
     props: ['computer'],
+    setup () {
+        return { height }
+    },
     mounted () {
         const canvas = this.$refs.architecture
         const ctx = canvas.getContext('2d')
+
+        // window.addEventListener("resize", () => );
 
         const update = () => {
             // background

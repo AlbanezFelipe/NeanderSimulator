@@ -57,6 +57,7 @@ export default class Neander {
 
         // Unit control timing counter
         this.controlTime = 0
+        this.currentTime = null
 
         // Breakpoint value
         this.BP = Math.max(RAM.length - 1, 0)
@@ -164,6 +165,7 @@ export default class Neander {
 
     next () {
         this.setControlUnit(this.getMicroInstruction())
+        this.currentTime = this.controlTime
         this.runMicroInstruction()
     }
 

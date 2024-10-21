@@ -1,15 +1,15 @@
 <template>
-    <div class="row no-wrap">
+    <div class="row flex-center" style="row-gap: 16px;">
         <div style="border: 2px solid #aaa9ae; box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.2); height: 154px;">
             <canvas ref="clock" width="400" height="150" style="width: 400px; height: 150px">
                 Sorry, your browser does not support canvas.
             </canvas>
         </div>
-        <div class="column full-width q-pl-sm">
+        <div class="column full-width q-pl-sm" style="min-width: 150px; flex: 1 1 150px">
             <!-- Clock Frequency -->
-            <div class="column">
-                <div class="row items-center">
-                    <span class="q-mr-sm">Clock Frequency (ms) {{ clock.frequency }}ms {{ (1000 / clock.frequency).toFixed(3) }}Hz</span>
+            <div class="column" style="overflow: hidden; max-width: 100%;">
+                <div class="row items-center" style="overflow: hidden; max-width: 100%;">
+                    <span class="q-mr-sm text-slider">Clock Frequency (ms) {{ clock.frequency }}ms {{ (1000 / clock.frequency).toFixed(3) }}Hz</span>
                     <q-badge rounded>
                         <span class="help">?</span>
                         <q-tooltip anchor="center right" self="center left" :offset="[4, 4]">
@@ -19,9 +19,9 @@
                 </div>
                 <q-slider @update:model-value="$emit('update:frequency', $event)" :model-value="clock.frequency" :min="0" :max="2500" :step="25" label />
             </div>
-            <div class="column">
-                <div class="row items-center">
-                    <span class="q-mr-sm">time/div (ms) {{ timeDiv }}</span>
+            <div class="column" style="overflow: hidden; max-width: 100%;">
+                <div class="row items-center" style="overflow: hidden; max-width: 100%;">
+                    <span class="q-mr-sm text-slider">time/div (ms) {{ timeDiv }}</span>
                     <q-badge rounded>
                         <span class="help">?</span>
                         <q-tooltip anchor="center right" self="center left" :offset="[4, 4]">
@@ -31,9 +31,9 @@
                 </div>
                 <q-slider v-model="timeDiv" :min="0" :max="5000" :step="5" label />
             </div>
-            <div class="column">
-                <div class="row items-center">
-                    <span class="q-mr-sm">divs {{ divs }}</span>
+            <div class="column" style="overflow: hidden; max-width: 100%;">
+                <div class="row items-center" style="overflow: hidden; max-width: 100%;">
+                    <span class="q-mr-sm text-slider">divs {{ divs }}</span>
                     <q-badge rounded>
                         <span class="help">?</span>
                         <q-tooltip anchor="center right" self="center left" :offset="[4, 4]">
@@ -46,6 +46,14 @@
         </div>
     </div>
 </template>
+
+<style lang="stylus">
+    .text-slider
+        overflow hidden
+        text-wrap nowrap
+        text-overflow ellipsis
+        max-width calc(100% - 28px)
+</style>
 
 <script>
 import { defineComponent } from 'vue'

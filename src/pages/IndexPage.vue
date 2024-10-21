@@ -1,14 +1,20 @@
 <template>
     <q-page class="flex justify-around">
-        <div class="row justify-center full-width no-wrap q-py-md q-px-md">
+        <div class="row justify-center full-width q-py-md q-px-md" style="background-color: #f5f5f5; row-gap: 24px; column-gap: 24px">
 
             <!-- RAM -->
-            <MemoryTable v-if="configStore.showTableProgram" class="q-mr-lg" title="Programa" :rows="ramRows" :columns="columnsProgram" @updateRow="updateRow" v-model:base="baseProgram" :instructions="instructions" :breakpoint="computer.BP" @setPointer="setPointer" @setBreakpoint="setBreakpoint" />
-            <MemoryTable v-if="configStore.showTableData" class="q-mr-lg" title="Dados" :rows="ramRows" :columns="columnsData" @updateRow="updateRow" v-model:base="baseData" />
+            <MemoryTable style="flex: 1 1 305.033px" v-if="configStore.showTableProgram" title="Programa" :rows="ramRows" :columns="columnsProgram" @updateRow="updateRow" v-model:base="baseProgram" :instructions="instructions" :breakpoint="computer.BP" @setPointer="setPointer" @setBreakpoint="setBreakpoint" />
+            <MemoryTable style="flex: 1 1 152.233px" v-if="configStore.showTableData" title="Dados" :rows="ramRows" :columns="columnsData" @updateRow="updateRow" v-model:base="baseData" />
 
             <!-- Machine -->
-            <div class="column wrapper">
-                <span class="bg-primary text-white q-px-sm q-py-sm wrapper-title">Computador</span>
+            <div class="column wrapper bg-white" style="flex: 1000 1 453.5px">
+                <div class="row justify-between items-center bg-primary text-white q-px-sm q-py-sm">
+                    <span class="wrapper-title">Computador</span>
+                    <div class="row flex-center">
+                        <q-toggle class="q-mr-lg" v-model="is2s" color="green-4" label="2's" left-label dense></q-toggle>
+                        <BaseDropdown v-model:value="baseComputer" noBin />
+                    </div>
+                </div>
                 <div class="column q-pa-sm no-wrap" style="overflow: auto; flex-grow: 1; height: 500px">
 
                     <!-- Architecture -->
@@ -22,39 +28,39 @@
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-between items-center q-mb-sm">
                             <div class="column items-center">
                                 <span>ACC</span>
-                                <span>(2's): {{ complement2(computer.ACC) }}</span>
+                                <!--<span>(2's): {{ complement2(computer.ACC) }}</span>-->
                             </div>
-                            <DigitalSegment @update="computer.ACC = $event; computer.updateFlags($event)" :value="computer.ACC" />
+                            <DigitalSegment @update="computer.ACC = $event; computer.updateFlags($event)" :value="computer.ACC" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
 
                         <!-- Program Counter -->
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
                             <span>PC</span>
-                            <DigitalSegment @update="computer.PC = $event" :value="computer.PC" />
+                            <DigitalSegment @update="computer.PC = $event" :value="computer.PC" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
 
                         <!-- OUT -->
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
                             <span>OUT</span>
-                            <DigitalSegment @update="computer.OUT = $event" :value="computer.OUT" />
+                            <DigitalSegment @update="computer.OUT = $event" :value="computer.OUT" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
 
                         <!-- MDR -->
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
                             <span>MDR</span>
-                            <DigitalSegment @update="computer.MDR = $event" :value="computer.MDR" />
+                            <DigitalSegment @update="computer.MDR = $event" :value="computer.MDR" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
 
                         <!-- MAR -->
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
                             <span>MAR</span>
-                            <DigitalSegment @update="computer.MAR = $event" :value="computer.MAR" />
+                            <DigitalSegment @update="computer.MAR = $event" :value="computer.MAR" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
 
                         <!-- RI -->
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
                             <span>RI</span>
-                            <DigitalSegment @update="computer.RI = $event" :value="computer.RI" />
+                            <DigitalSegment @update="computer.RI = $event" :value="computer.RI" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
                     </div>
 
@@ -88,20 +94,29 @@
                     </BoxWrapper>
 
                     <div class="row full-width">
-                        <BoxWrapper title="Temporização de Instrução" style="min-width: 262px" class="q-mr-sm">
-                            <div class="column flex-center">
-                                <span>T{{ computer.controlTime }}</span>
-                                <div class="row">
-                                    <div class="q-mt-xs" v-for="(b, i) in ([...(computer.controlTime >>> 0).toString(2).padStart(3, '0')].map(n => !!(n * 1)))" :key="'T-' + i">
-                                        <LED :state="b" />
-                                    </div>
+                        <BoxWrapper title="Temporização de Instrução" style="min-width: 262px; flex-grow: 1" class="q-mr-sm">
+                            <div class="row items-center justify-around full-height">
+                                <span>Atual: <q-badge color="primary">{{ computer.currentTime != null ? 'T' + computer.currentTime : '--' }}</q-badge></span>
+                                <div class="row items-center">
+                                    <span>Contador:&nbsp;</span>
+                                    <q-badge color="primary">
+                                        <div class="column flex-center">
+                                            <span>T{{ computer.controlTime }}</span>
+                                            <div class="row">
+                                                <div class="q-mt-xs" v-for="(b, i) in ([...(computer.controlTime >>> 0).toString(2).padStart(3, '0')].map(n => !!(n * 1)))" :key="'T-' + i">
+                                                    <LED :state="b" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </q-badge>
                                 </div>
                             </div>
                         </BoxWrapper>
                         <BoxWrapper title="Instrução" style="min-width: 203.2px; flex-grow: 1">
                             <div class="row items-center justify-around full-height">
-                                <span>Ciclo: <q-badge color="primary">{{ computer.controlTime < 3 ? 'Fetch' : 'Execution' }}</q-badge></span>
-                                <span>Mnemônico: <q-badge color="primary">{{ computer.controlTime < 3 ? '???' : computer.decoder(computer.RI) }}</q-badge></span>
+                                <span>Ciclo: <q-badge color="primary">{{ computer.currentTime < 3 ? 'Fetch' : 'Execution' }}</q-badge></span>
+                                <span>Palavra: <q-badge color="primary">{{ control.filter(c => c.state).map(c => c.key).join(', ') || '---' }}</q-badge></span>
+                                <span>Mnemônico: <q-badge color="primary">{{ computer.currentTime < 3 ? '???' : computer.decoder(computer.RI) }}</q-badge></span>
                             </div>
                         </BoxWrapper>
                     </div>
@@ -111,12 +126,12 @@
                     <BoxWrapper title="Simulação">
                         <!-- Actions -->
                         <div class="row q-col-gutter-sm q-mb-sm" style="min-width: 100%">
-                            <div class="col-4"><q-btn @click="reset" class="full-width" color="negative" icon="power_settings_new" label="RESET" /></div>
-                            <div class="col-4"><q-btn @click="stop" class="full-width" color="negative" icon="radio_button_checked" label="STOP (HLT)" /></div>
-                            <div class="col-4"><q-btn @click="clear" class="full-width" color="secondary" icon="restore" label="CLEAR" /></div>
-                            <div class="col-4"><q-btn @click="nextInstruction" class="full-width" color="primary" icon="redo" label="NEXT (INSTRUCTION)" /></div>
-                            <div class="col-4"><q-btn @click="nextTick" class="full-width" color="primary" icon="redo" label="NEXT (CLOCK)" /></div>
-                            <div class="col-4"><q-btn @click="nextUntilHLT" class="full-width" color="primary" icon="autorenew" label="NEXT (AUTO)" /></div>
+                            <ControlButton @action-click="nextTick" icon="redo" label="NEXT" subLabel="TICK" />
+                            <ControlButton @action-click="nextInstruction" icon="redo" label="NEXT" subLabel="INSTRUCTION" />
+                            <ControlButton @action-click="nextUntilHLT" icon="autorenew" label="NEXT" subLabel="AUTO" />
+                            <ControlButton @action-click="stop" color="negative" icon="radio_button_checked" label="STOP" subLabel="HLT" />
+                            <ControlButton @action-click="reset" color="negative" icon="power_settings_new" label="RESET" />
+                            <ControlButton @action-click="clear" color="secondary" icon="restore" label="CLEAR" />
                         </div>
 
                         <!-- statistics -->
@@ -138,8 +153,8 @@
                 </div>
             </div>
             <!-- Canvas -->
-            <div v-if="configStore.showCanvasDiagram" class="column wrapper q-ml-lg">
-                <span class="bg-primary text-white q-px-sm q-py-sm wrapper-title">Diagrama</span>
+            <div v-if="configStore.showCanvasDiagram" class="column wrapper bg-white"> <!-- style="flex: 1 1 401.833px" -->
+                <span class="bg-primary text-white q-px-sm q-py-sm wrapper-title">Diagramação</span>
                 <CanvasArchitecture :computer="computer" />
             </div>
         </div>
@@ -161,9 +176,11 @@ import CanvasArchitecture from 'components/CanvasArchitecture.vue'
 import CanvasClock from 'components/CanvasClock.vue'
 import DialogSave from 'components/DialogSave.vue'
 import DialogLoad from 'components/DialogLoad.vue'
+import BaseDropdown from 'components/BaseDropdown.vue'
+import ControlButton from 'components/ControlButton.vue'
 import Clock from '../clock.js'
 import Neander from '../neander.js'
-import { saveBlob, intArrayToMem, intArrayToHexdump, partition } from '../utils.js'
+import { saveBlob, intArrayToMem, intArrayToHexdump, partition, complement2 } from '../utils.js'
 import { useConfigStore } from 'stores/config.js'
 
 const columnsProgram = [
@@ -214,11 +231,9 @@ const columnsData = [
     }
 ]
 
-const complement2 = n => n & 128 ? -1 * ((n ^ 255) + 1) : n
-
 export default defineComponent({
     name: 'IndexPage',
-    components: { MemoryTable, DigitalSegment, BoxWrapper, LED, CanvasArchitecture, CanvasClock, DialogSave, DialogLoad },
+    components: { MemoryTable, DigitalSegment, BoxWrapper, LED, CanvasArchitecture, CanvasClock, DialogSave, DialogLoad, BaseDropdown, ControlButton },
     data: () => ({
         arch: 'Neander',
         clock: null,
@@ -226,6 +241,8 @@ export default defineComponent({
         // sim
         baseProgram: 'decimal',
         baseData: 'decimal',
+        baseComputer: 'decimal',
+        is2s: false,
         //
         T0HLT: false
     }),

@@ -1,10 +1,10 @@
 <template>
     <div class="column items-center">
-        <div class="bg-dark q-px-sm q-py-xs silver-border" style="width: fit-content">
+        <div class="bg-dark q-px-sm q-py-sm silver-border" style="width: fit-content">
             <div class="relative-position">
-                <span class="segment-on absolute-center">{{ value }}</span>
-                <span class="segment-off absolute-center">888</span>
-                <span class="segment-off" style="opacity: 0">888</span>
+                <span class="segment-on absolute-center">{{ print }}</span>
+                <!--span class="segment-off absolute-center">{{ placeholder }}</span>-->
+                <span class="segment-off">{{ placeholder }}</span>
             </div>
             <q-popup-edit @update:model-value="$emit('update', $event)" :model-value="value" title="Update data" buttons v-slot="scope">
                 <q-input type="number" v-model.number="scope.value" dense autofocus />
@@ -28,9 +28,12 @@
     .segment-off
         font-family 'Seven Segment'
         color display_color
-        font-size 36px
+        font-size 24px
         font-weight 400
         line-height 1
+        display inline-block
+        vertical-align middle
+        text-wrap nowrap
 
     .segment-on
         width 100%
@@ -51,6 +54,7 @@
 <script>
 import { defineComponent } from 'vue'
 import LED from 'components/LED.vue'
+import { complement2 } from '../utils.js'
 
 export default defineComponent({
     name: 'DigitalSegment',
@@ -59,6 +63,22 @@ export default defineComponent({
         value: {
             type: Number,
             required: true
+        },
+        is2s: {
+            type: Boolean,
+            default: false
+        },
+        isHex: {
+            type: Boolean,
+            default: false
+        }
+    },
+    computed: {
+        placeholder () {
+            return '8'.repeat(3 + (+this.is2s) - (+this.isHex))
+        },
+        print () {
+            return (this.is2s ? complement2(this.value) : this.value).toString(this.isHex ? 16 : 10)
         }
     }
 })

@@ -11,7 +11,7 @@
                     @click="toggleLeftDrawer"
                 />
 
-                <q-toolbar-title>
+                <q-toolbar-title shrink class="topbar-hide" style="min-width: 245px">
                     Simulador Neander
                 </q-toolbar-title>
 
@@ -25,8 +25,15 @@
 
                 <q-space />
 
-                <q-btn @click="$refs.view.load?.()" color="white" outline label="Load" icon="upload" />
-                <q-btn @click="$refs.view.save?.()" class="q-ml-sm" color="negative" label="Save" icon="save" />
+                <q-btn @click="$refs.view.load?.()" color="white" outline>
+                    <q-icon name="upload" />
+                    <span class="topbar-hide on-right">Carregar</span>
+                </q-btn>
+                <q-btn @click="$refs.view.save?.()" class="q-ml-sm" color="negative">
+                    <q-icon name="save" />
+                    <span class="topbar-hide on-right">Salvar</span>
+                </q-btn>
+
             </q-toolbar>
         </q-header>
 
@@ -38,7 +45,8 @@
                 <q-item-label
                     header
                 >
-                    Essential Links
+                    Projeto Neander
+                    Versão 1.0.1
                 </q-item-label>
             </q-list>
         </q-drawer>
@@ -50,6 +58,13 @@
         </q-page-container>
     </q-layout>
 </template>
+
+<style lang="stylus">
+    @media (max-width: 800px)
+        .topbar-hide
+            display: none
+
+</style>
 
 <script>
 import { defineComponent, ref } from 'vue'

@@ -27,3 +27,5 @@ export const partition = (arr, n) => {
     }
     return o
 }
+
+export const complement2 = n => n & 128 ? -1 * ((n ^ 255) + 1) : n

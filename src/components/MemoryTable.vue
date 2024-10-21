@@ -3,27 +3,7 @@
         <div class="row justify-between items-center bg-primary text-white q-py-sm q-px-sm no-wrap">
             <span class="wrapper-title q-pr-sm">{{ title }}</span>
             <div class="row flex-center no-wrap">
-                <q-btn-dropdown flat color="white" dense :label="bases[base]">
-                    <q-list>
-                        <q-item clickable v-close-popup @click="updateBase('binary')">
-                            <q-item-section>
-                                <q-item-label>binary 0..1</q-item-label>
-                            </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-close-popup @click="updateBase('decimal')">
-                            <q-item-section>
-                                <q-item-label>decimal 0..9</q-item-label>
-                            </q-item-section>
-                        </q-item>
-
-                        <q-item clickable v-close-popup @click="updateBase('hexadecimal')">
-                            <q-item-section>
-                                <q-item-label>hexadecimal 0..F</q-item-label>
-                            </q-item-section>
-                        </q-item>
-                    </q-list>
-                </q-btn-dropdown>
+                <BaseDropdown :value="base" @update:value="$emit('update:base', $event)" />
                 <!--<q-btn @click="hide = true" size="sm" flat padding="xs" color="white" icon="remove" />-->
             </div>
         </div>
@@ -105,18 +85,11 @@
 
 <script>
 import { defineComponent } from 'vue'
-
-const bases = {
-    binary: '0..1',
-    decimal: '0..9',
-    hexadecimal: '0..F'
-}
+import BaseDropdown from './BaseDropdown.vue'
 
 export default defineComponent({
     name: 'MemoryTable',
-    setup () {
-        return { bases }
-    },
+    components: { BaseDropdown },
     props: {
         title: {
             type: String,
@@ -141,11 +114,6 @@ export default defineComponent({
         breakpoint: {
             type: Number,
             required: false
-        }
-    },
-    methods: {
-        updateBase (base) {
-            this.$emit('update:base', base)
         }
     }
 })
