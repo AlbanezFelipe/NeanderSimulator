@@ -170,7 +170,12 @@ export default class Neander {
     }
 
     mnemonics () {
-        return this.RAM.map((n, i, arr) => [16, 32, 48, 64, 80, 128, 144, 160].includes(arr[i - 1]) ? `[${n}]` : this.decoder(n))
+        const v = [16, 32, 48, 64, 80, 128, 144, 160]
+        return this.RAM.map((n, i, arr) => this.isMnemonicParameter(arr, i, v) ? `[${n}]` : this.decoder(n))
+    }
+
+    isMnemonicParameter (arr, i, v) {
+        return v.includes(arr[i - 1]) && (!v.includes(arr[i - 2]) || this.isMnemonicParameter(arr, i - 2, v))
     }
 
     resetCounter () {

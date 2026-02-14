@@ -1,5 +1,5 @@
 <template>
-    <q-layout view="lHh Lpr lFf">
+    <q-layout view="hHh Lpr lFf">
         <q-header elevated>
             <q-toolbar>
                 <q-btn
@@ -37,18 +37,43 @@
             </q-toolbar>
         </q-header>
 
-        <q-drawer
-            v-model="leftDrawerOpen"
-            bordered
-        >
-            <q-list>
-                <q-item-label
-                    header
-                >
-                    Projeto Neander
-                    Versão 1.0.1
-                </q-item-label>
+        <q-drawer v-model="leftDrawerOpen" overlay bordered class="relative-position column no-wrap">
+            <q-list padding>
+                <q-item clickable v-ripple>
+                    <q-item-section avatar><q-icon name="o_code" /></q-item-section>
+                    <q-item-section>Carregar Exemplos</q-item-section>
+                </q-item>
+                <q-item clickable v-ripple>
+                    <q-item-section avatar><q-icon name="o_refresh" /></q-item-section>
+                    <q-item-section>Limpar Memória</q-item-section>
+                </q-item>
+                <q-separator class="q-my-sm" />
+                <a class="router-link" target="_blank" href="https://albanezfelipe.github.io/docs/Neander/Contin,%20Felipe%20Albanez.%20Trabalho%20de%20conclus%C3%A3o%20de%20curso%20Engenharia%20de%20Computa%C3%A7%C3%A3o.pdf">
+                    <q-item clickable v-ripple>
+                        <q-item-section avatar><q-icon name="o_article" /></q-item-section>
+                        <q-item-section>Monografia do Projeto</q-item-section>
+                    </q-item>
+                </a>
+                <a class="router-link" target="_blank" href="https://github.com/AlbanezFelipe/NeanderSimulator">
+                    <q-item clickable v-ripple>
+                        <q-item-section avatar><q-icon name="fa-brands fa-github" /></q-item-section>
+                        <q-item-section>Repositório GitHub</q-item-section>
+                    </q-item>
+                </a>
+                <a class="router-link" target="_blank" href="http://wiki.icmc.usp.br/images/5/58/SSC0610-Aula03s-Neander.pdf">
+                    <q-item clickable v-ripple>
+                        <q-item-section avatar><q-icon name="o_integration_instructions" /></q-item-section>
+                        <q-item-section>Documentação Neander Original</q-item-section>
+                    </q-item>
+                </a>
+                <q-separator class="q-my-sm" />
+                <q-item clickable v-ripple>
+                    <q-item-section avatar><q-icon name="o_info" /></q-item-section>
+                    <q-item-section>Sobre</q-item-section>
+                </q-item>
             </q-list>
+            <q-space />
+            <div class="q-pb-sm" style="text-align: center; text-size: 12px; color: #787f89">Versão 1.0.2 - 14/02/2026</div>
         </q-drawer>
 
         <q-page-container>

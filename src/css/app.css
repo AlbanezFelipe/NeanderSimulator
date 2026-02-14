@@ -33,3 +33,9 @@ body {
     text-wrap: nowrap;
     text-overflow: ellipsis;
 }
+
+.router-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
