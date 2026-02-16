@@ -72,6 +72,47 @@ export default class Neander {
 
         // Event callback for emit events with other modules
         this.eventCallback = eventCallback
+
+        this.labels = {
+            controlUnit: {
+                MR:  'Memory Read',
+                MW:  'Memory Write',
+                LMA: 'Load Memory Address',
+                LMD: 'Load Memory Data',
+                SA:  'Select Address',
+                IC:  'Increment counter',
+                LC:  'Load Counter',
+                LI:  'Load Instruction',
+                LA:  'Load Accumulator',
+                LF:  'Load Flags',
+                ADD: 'ALU ADD',
+                AND: 'ALU AND',
+                OR:  'ALU OR',
+                NOT: 'ALU NOT',
+                LDA: 'ALU LDA(Y)',
+                LO:  'Load Out',
+                HLT: 'Halt',
+                T0:  'Go to T0'
+            },
+            flags: {
+                N: 'Negative Flag',
+                Z: 'Zero Flag'
+            },
+            instructions: {
+                NOP: 'Nenhuma Operação',
+                STA: 'Armazena Acumulador',
+                LDA: 'Carrega Acumulador',
+                ADD: 'Soma',
+                OR:  'Operação Lógica OR',
+                AND: 'Operação Lógica AND',
+                NOT: 'Inverte bits do Acumulador',
+                JMP: 'Desvio Incondicional',
+                JN:  'Desvio Condicional Negative',
+                JZ:  'Desvio Condicional Zero',
+                OUT: 'Carrega Registrador de Saída',
+                HLT: 'Encerra Execução'
+            }
+        }
     }
 
     read (address) {

@@ -28,38 +28,53 @@
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-between items-center q-mb-sm">
                             <div class="column items-center">
                                 <span>ACC</span>
-                                <!--<span>(2's): {{ complement2(computer.ACC) }}</span>-->
+                                <q-tooltip class="bg-primary" anchor="top middle" self="center middle">Acumulador</q-tooltip>
                             </div>
                             <DigitalSegment @update="computer.ACC = $event; computer.updateFlags($event)" :value="computer.ACC" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
 
                         <!-- Program Counter -->
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
-                            <span>PC</span>
+                            <div class="column items-center">
+                                <span>PC</span>
+                                <q-tooltip class="bg-primary" anchor="top middle" self="center middle">Contador de Programa</q-tooltip>
+                            </div>
                             <DigitalSegment @update="computer.PC = $event" :value="computer.PC" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
 
                         <!-- OUT -->
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
-                            <span>OUT</span>
+                            <div class="column items-center">
+                                <span>OUT</span>
+                                <q-tooltip class="bg-primary" anchor="top middle" self="center middle">Registrador de Saída</q-tooltip>
+                            </div>
                             <DigitalSegment @update="computer.OUT = $event" :value="computer.OUT" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
 
                         <!-- MDR -->
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
-                            <span>MDR</span>
+                            <div class="column items-center">
+                                <span>MDR</span>
+                                <q-tooltip class="bg-primary" anchor="top middle" self="center middle">Registrador de Dados da Memória</q-tooltip>
+                            </div>
                             <DigitalSegment @update="computer.MDR = $event" :value="computer.MDR" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
 
                         <!-- MAR -->
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
-                            <span>MAR</span>
+                            <div class="column items-center">
+                                <span>MAR</span>
+                                <q-tooltip class="bg-primary" anchor="top middle" self="center middle">Registrador de Endereço de Memória</q-tooltip>
+                            </div>
                             <DigitalSegment @update="computer.MAR = $event" :value="computer.MAR" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
 
                         <!-- RI -->
                         <div class="column col-xs-12 col-sm-6 col-md-4 col-lg-2 justify-center items-center q-mb-sm">
-                            <span>RI</span>
+                            <div class="column items-center">
+                                <span>RI</span>
+                                <q-tooltip class="bg-primary" anchor="top middle" self="center middle">Registrador de Instrução</q-tooltip>
+                            </div>
                             <DigitalSegment @update="computer.RI = $event" :value="computer.RI" :is2s="is2s" :isHex="baseComputer === 'hexadecimal'" />
                         </div>
                     </div>
@@ -68,7 +83,10 @@
                     <BoxWrapper title="Flags">
                         <div class="row justify-around">
                             <div class="row" v-for="f in flags" :key="'flag-' + f.key">
-                                <span class="q-mr-sm">{{ f.key }}</span>
+                                <div class="column items-center">
+                                    <span class="q-mr-sm">{{ f.key }}</span>
+                                    <q-tooltip class="bg-primary" anchor="top middle" self="center middle" :offset="[0, 18]">{{ f.label }}</q-tooltip>
+                                </div>
                                 <LED :state="f.state" :size="24" />
                             </div>
                         </div>
@@ -78,7 +96,10 @@
                     <BoxWrapper title="Unidade de Controle">
                         <div class="row justify-around">
                             <div class="column flex-center row q-mr-md" v-for="c in control" :key="'control-' + c.key">
-                                <span>{{ c.key }}</span>
+                                <div class="column items-center">
+                                    <span>{{ c.key }}</span>
+                                    <q-tooltip class="bg-primary" anchor="top middle" self="center middle">{{ c.label }}</q-tooltip>
+                                </div>
                                 <LED :state="c.state" :size="24" color="red" />
                             </div>
                         </div>
@@ -125,16 +146,18 @@
                     <!-- Simulation -->
                     <BoxWrapper title="Simulação">
                         <!-- Actions -->
-                        <div class="row q-col-gutter-sm q-mb-sm" style="min-width: 100%">
-                            <ControlButton @action-click="nextTick" icon="redo" label="NEXT" subLabel="TICK" />
-                            <ControlButton @action-click="nextInstruction" icon="redo" label="NEXT" subLabel="INSTRUCTION" />
-                            <ControlButton @action-click="nextUntilHLT" icon="autorenew" label="NEXT" subLabel="AUTO" />
-                            <ControlButton @action-click="stop" color="negative" icon="radio_button_checked" label="STOP" subLabel="HLT" />
-                            <ControlButton @action-click="reset" color="negative" icon="power_settings_new" label="RESET" />
-                            <ControlButton @action-click="clear" color="secondary" icon="restore" label="CLEAR" />
+                        <div class="row q-col-gutter-sm" style="min-width: 100%">
+                            <ControlButton @action-click="nextTick" icon="redo" label="NEXT" subLabel="TICK" tooltip="Próxima Microinstrução" />
+                            <ControlButton @action-click="nextInstruction" icon="redo" label="NEXT" subLabel="INSTRUCTION" tooltip="Próxima Instrução" />
+                            <ControlButton @action-click="nextUntilHLT" icon="autorenew" label="NEXT" subLabel="AUTO" tooltip="Executar até HLT" />
+                            <ControlButton @action-click="stop" color="negative" icon="radio_button_checked" label="STOP" subLabel="HLT" tooltip="Parar Execução" />
+                            <ControlButton @action-click="reset" color="negative" icon="power_settings_new" label="RESET" tooltip="Parar e Reiniciar Máquina" />
+                            <ControlButton @action-click="clear" color="secondary" icon="restore" label="CLEAR" tooltip="Limpar Histórico de Execução" />
                         </div>
+                    </BoxWrapper>
 
-                        <!-- statistics -->
+                    <!-- statistics -->
+                    <BoxWrapper title="Histórico de Execução">
                         <div class="row">
                             <!--<span class="row items-center"><span class="q-mr-xs">HLT:</span><LED :state="computer.clockHLT" :size="16" /></span>-->
                             <span class="q-mr-lg">Acessos: <q-badge color="primary">{{ computer.counter.accesses }}</q-badge></span>
@@ -147,7 +170,10 @@
                     <!-- Mnemonics -->
                     <BoxWrapper title="Mnemônicos">
                         <div class="row q-col-gutter-sm" style="min-width: 100%">
-                            <div v-for="i in instructions" :key="'instructions-' + i.value" class="col-xs-3 col-sm-2 col-md-2 col-lg-1 text-center"><span class="text-bold">{{ i.label }} {{ i.value }}</span></div>
+                            <div v-for="i in instructions" :key="'instructions-' + i.value" class="col-xs-3 col-sm-2 col-md-2 col-lg-1 text-center">
+                                <span class="text-bold">{{ i.label }} {{ i.value }}</span>
+                                <q-tooltip class="bg-primary" anchor="top middle" self="center middle">{{ i.labelInstruction }}</q-tooltip>
+                            </div>
                         </div>
                     </BoxWrapper>
                 </div>
@@ -268,14 +294,14 @@ export default defineComponent({
             return (this.computer.RAM || []).map((d, i) => ({ data: d, address: i, p: i === this.computer.PC, mnemonic: a[i] }))
         },
         flags () {
-            return Object.keys(this.computer.flags).map(k => ({ key: k, state: Boolean(this.computer.flags[k]) }))
+            return Object.keys(this.computer.flags).map(k => ({ key: k, state: Boolean(this.computer.flags[k]), label: this.computer.labels?.flags?.[k] }))
         },
         control () {
-            return Object.keys(this.computer.controlUnit).map(k => ({ key: k, state: Boolean(this.computer.controlUnit[k]) }))
+            return Object.keys(this.computer.controlUnit).map(k => ({ key: k, state: Boolean(this.computer.controlUnit[k]), label: this.computer.labels?.controlUnit?.[k] }))
         },
         instructions () {
             const o = this.computer.instructions
-            return Object.keys(o).map(k => ({ value: k * 1, label: o[k] }))
+            return Object.keys(o).map(k => ({ value: k * 1, label: o[k], labelInstruction: this.computer.labels?.instructions?.[o[k]] }))
         }
     },
     methods: {

@@ -6,6 +6,7 @@
                 <span class="text-ellipsis">{{ label }}</span>
                 <span class="text-ellipsis" style="font-size: 12px" v-if="subLabel">({{ subLabel }})</span>
             </div>
+            <q-tooltip :class="'bg-' + color" anchor="top middle" self="center middle" :offset="[0, 20]" v-if="tooltip">{{ tooltip }}</q-tooltip>
         </q-btn>
     </div>
 </template>
@@ -19,7 +20,8 @@ export default defineComponent({
         color: { type: String, default: 'primary' },
         icon: { type: String, required: true },
         label: { type: String, required: true },
-        subLabel: { type: String, required: false }
+        subLabel: { type: String, required: false },
+        tooltip: { type: String, required: false }
     }
 })
 </script>
