@@ -21,7 +21,7 @@
                     <q-icon v-if="props.row.address === breakpoint" name="radio_button_checked" color="red" size="24px"/>
                     <q-popup-edit :model-value="props.value" title="Ponteiros" :ref="'pointerPopup' + props.row.address">
                         <div class="column flex-center">
-                            <span><b>address:</b> {{ props.row.address }}</span>
+                            <span class="q-pb-sm"><b>Endereço:</b> {{ props.row.address }}</span>
                             <div class="row flex-center no-wrap">
                                 <q-btn @click="$emit('set-pointer', props.row.address); $refs['pointerPopup' + props.row.address]?.hide()" class="q-mr-sm" color="primary" icon="east" label="Set PC" />
                                 <q-btn @click="$emit('set-breakpoint', props.row.address); $refs['pointerPopup' + props.row.address]?.hide()" color="primary" icon="radio_button_checked" label="Set BP" />
@@ -31,21 +31,23 @@
                 </q-td>
             </template>
 
+            <template v-slot:body-cell-address="props">
+                <q-td :props="props">
+                    {{ baseFormat(props.value) }}
+                </q-td>
+            </template>
+
             <template v-slot:body-cell-data="props">
                 <q-td :props="props">
-                    {{ props.row.data }}
-                    <q-popup-edit :model-value="props.row.data" @update:model-value="$emit('updateRow', props.row.address, $event)" title="Update data" buttons v-slot="scope">
-                        <q-input type="number" v-model.number="scope.value" dense autofocus />
-                    </q-popup-edit>
+                    {{ baseFormat(props.row.data) }}
+                    <EditNumber :value="props.row.data" @update="$emit('updateRow', props.row.address, $event)" />
                 </q-td>
             </template>
 
             <template v-slot:body-cell-mnemonic="props">
                 <q-td :props="props">
                     {{ props.row.mnemonic }}
-                    <q-popup-edit :model-value="props.row.data" @update:model-value="$emit('updateRow', props.row.address, $event)" title="Update data" buttons v-slot="scope">
-                        <q-select v-model="scope.value" :options="instructions" dense autofocus emit-value map-options />
-                    </q-popup-edit>
+                    <EditNumber :value="props.row.data" @update="$emit('updateRow', props.row.address, $event)" :instructions="instructions"/>
                 </q-td>
             </template>
 
@@ -86,10 +88,11 @@
 <script>
 import { defineComponent } from 'vue'
 import BaseDropdown from './BaseDropdown.vue'
+import EditNumber from './EditNumber.vue'
 
 export default defineComponent({
     name: 'MemoryTable',
-    components: { BaseDropdown },
+    components: { BaseDropdown, EditNumber },
     props: {
         title: {
             type: String,
@@ -114,6 +117,15 @@ export default defineComponent({
         breakpoint: {
             type: Number,
             required: false
+        }
+    },
+    methods: {
+        baseFormat (v) {
+            return ({
+                binary: (v) => (v >>> 0)?.toString(2)?.padStart(8, '0'),
+                hexadecimal: (v) => Number(v)?.toString(16)?.padStart(2, '0'),
+                decimal: (v) => v?.toString()
+            })[this.base]?.(v) || v
         }
     }
 })

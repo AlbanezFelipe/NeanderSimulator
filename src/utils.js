@@ -29,3 +29,5 @@ export const partition = (arr, n) => {
 }
 
 export const complement2 = n => n & 128 ? -1 * ((n ^ 255) + 1) : n
+
+export const numberValidation = v => v !== null && v !== undefined && v !== '' && Number.isFinite(+v) && v >= 0 && v < 256

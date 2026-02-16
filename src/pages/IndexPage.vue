@@ -160,6 +160,9 @@
         </div>
         <DialogSave ref="dialogsave" @save="download" />
         <DialogLoad ref="dialogload" @load="readFile" />
+        <DialogClear ref="dialogclear" @clear="clearMemory" />
+        <DialogExamples ref="dialogexamples" @load="loadExample" />
+        <DialogAbout ref="dialogabout" />
     </q-page>
 </template>
 
@@ -176,11 +179,14 @@ import CanvasArchitecture from 'components/CanvasArchitecture.vue'
 import CanvasClock from 'components/CanvasClock.vue'
 import DialogSave from 'components/DialogSave.vue'
 import DialogLoad from 'components/DialogLoad.vue'
+import DialogClear from 'components/DialogClear.vue'
+import DialogExamples from 'components/DialogExamples.vue'
+import DialogAbout from 'components/DialogAbout.vue'
 import BaseDropdown from 'components/BaseDropdown.vue'
 import ControlButton from 'components/ControlButton.vue'
 import Clock from '../clock.js'
 import Neander from '../neander.js'
-import { saveBlob, intArrayToMem, intArrayToHexdump, partition, complement2 } from '../utils.js'
+import { saveBlob, intArrayToMem, intArrayToHexdump, partition, complement2, numberValidation } from '../utils.js'
 import { useConfigStore } from 'stores/config.js'
 
 const columnsProgram = [
@@ -233,7 +239,9 @@ const columnsData = [
 
 export default defineComponent({
     name: 'IndexPage',
-    components: { MemoryTable, DigitalSegment, BoxWrapper, LED, CanvasArchitecture, CanvasClock, DialogSave, DialogLoad, BaseDropdown, ControlButton },
+    components: {
+        MemoryTable, DigitalSegment, BoxWrapper, LED, CanvasArchitecture, CanvasClock, DialogSave, DialogLoad, DialogClear, DialogExamples, DialogAbout, BaseDropdown, ControlButton
+    },
     data: () => ({
         arch: 'Neander',
         clock: null,
@@ -302,14 +310,24 @@ export default defineComponent({
             this.computer.resetCounter()
         },
         updateRow (index, value) {
+            if (!numberValidation(value)) return
             this.computer.RAM = this.computer.RAM.map((d, i) => i === index ? value : d)
             this.configStore.saveRAM(this.computer.RAM)
         },
         save () {
-            this.$refs.dialogsave.call()
+            this.$refs.dialogsave.call(this.computer.RAM)
         },
         load () {
             this.$refs.dialogload.call()
+        },
+        openExamples () {
+            this.$refs.dialogexamples.call()
+        },
+        confirmClearMemory () {
+            this.$refs.dialogclear.call()
+        },
+        openAbout () {
+            this.$refs.dialogabout.call()
         },
         download (name, format) {
             saveBlob(({
@@ -337,6 +355,12 @@ export default defineComponent({
                     // return
                 }
             })
+        },
+        clearMemory () {
+            this.computer.RAM = new Array(256).fill(0)
+        },
+        loadExample (key) {
+            console.log(key)
         },
         setPointer (PC) {
             this.computer.PC = PC

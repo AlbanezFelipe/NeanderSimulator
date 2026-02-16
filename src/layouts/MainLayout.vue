@@ -39,13 +39,13 @@
 
         <q-drawer v-model="leftDrawerOpen" overlay bordered class="relative-position column no-wrap">
             <q-list padding>
-                <q-item clickable v-ripple>
+                <q-item @click="$refs.view.openExamples?.()" clickable v-ripple>
                     <q-item-section avatar><q-icon name="o_code" /></q-item-section>
                     <q-item-section>Carregar Exemplos</q-item-section>
                 </q-item>
-                <q-item clickable v-ripple>
+                <q-item @click="$refs.view.confirmClearMemory?.()" clickable v-ripple>
                     <q-item-section avatar><q-icon name="o_refresh" /></q-item-section>
-                    <q-item-section>Limpar Memória</q-item-section>
+                    <q-item-section>Resetar Memória</q-item-section>
                 </q-item>
                 <q-separator class="q-my-sm" />
                 <a class="router-link" target="_blank" href="https://albanezfelipe.github.io/docs/Neander/Contin,%20Felipe%20Albanez.%20Trabalho%20de%20conclus%C3%A3o%20de%20curso%20Engenharia%20de%20Computa%C3%A7%C3%A3o.pdf">
@@ -67,7 +67,7 @@
                     </q-item>
                 </a>
                 <q-separator class="q-my-sm" />
-                <q-item clickable v-ripple>
+                <q-item clickable @click="$refs.view.openAbout?.()" v-ripple>
                     <q-item-section avatar><q-icon name="o_info" /></q-item-section>
                     <q-item-section>Sobre</q-item-section>
                 </q-item>

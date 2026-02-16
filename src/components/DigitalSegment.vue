@@ -6,9 +6,7 @@
                 <!--span class="segment-off absolute-center">{{ placeholder }}</span>-->
                 <span class="segment-off">{{ placeholder }}</span>
             </div>
-            <q-popup-edit @update:model-value="$emit('update', $event)" :model-value="value" title="Update data" buttons v-slot="scope">
-                <q-input type="number" v-model.number="scope.value" dense autofocus />
-            </q-popup-edit>
+            <EditNumber :value="value" @update="$emit('update', $event)"></EditNumber>
         </div>
         <div class="row">
             <div class="q-mt-xs" v-for="(b, i) in ([...(value >>> 0).toString(2).padStart(8, '0')].map(n => !!(n * 1)))" :key="'acc-' + i">
@@ -54,11 +52,12 @@
 <script>
 import { defineComponent } from 'vue'
 import LED from 'components/LED.vue'
+import EditNumber from 'components/EditNumber.vue'
 import { complement2 } from '../utils.js'
 
 export default defineComponent({
     name: 'DigitalSegment',
-    components: { LED },
+    components: { LED, EditNumber },
     props: {
         value: {
             type: Number,

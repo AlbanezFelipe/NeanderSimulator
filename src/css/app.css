@@ -39,3 +39,18 @@ body {
     color: inherit;
     display: block;
 }
+
+.text-link, .text-link-primary {
+    text-decoration: none;
+    cursor: pointer;
+    color: inherit;
+}
+
+.text-link-primary {
+    font-weight: bold;
+    color: var(--q-primary);
+}
+
+.text-link:hover, .text-link-primary:hover {
+    text-decoration: underline;
+}
