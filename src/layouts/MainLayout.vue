@@ -73,12 +73,12 @@
                 </q-item>
             </q-list>
             <q-space />
-            <div class="q-pb-sm" style="text-align: center; text-size: 12px; color: #787f89">Versão 1.0.2 - 14/02/2026</div>
+            <div class="q-pb-sm" style="text-align: center; text-size: 12px; color: #787f89">Versão 1.0.3 - 16/02/2026</div>
         </q-drawer>
 
         <q-page-container>
             <router-view v-slot="{ Component }">
-                <component ref="view" :is="Component" />
+                <component ref="view" :is="Component" @closeDrawer="closeDrawer" />
             </router-view>
         </q-page-container>
     </q-layout>
@@ -104,6 +104,9 @@ export default defineComponent({
             leftDrawerOpen,
             toggleLeftDrawer () {
                 leftDrawerOpen.value = !leftDrawerOpen.value
+            },
+            closeDrawer () {
+                leftDrawerOpen.value = false
             },
             configStore: useConfigStore()
         }

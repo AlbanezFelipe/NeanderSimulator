@@ -214,6 +214,7 @@ import Clock from '../clock.js'
 import Neander from '../neander.js'
 import { saveBlob, intArrayToMem, intArrayToHexdump, partition, complement2, numberValidation } from '../utils.js'
 import { useConfigStore } from 'stores/config.js'
+import * as examples from '../examples.js'
 
 const columnsProgram = [
     {
@@ -232,7 +233,7 @@ const columnsProgram = [
     },
     {
         name: 'data',
-        label: 'Data',
+        label: 'Dado',
         align: 'center',
         field: row => row.data,
         format: val => `${val}`
@@ -256,7 +257,7 @@ const columnsData = [
     },
     {
         name: 'data',
-        label: 'Data',
+        label: 'Dado',
         align: 'center',
         field: row => row.data,
         format: val => `${val}`
@@ -378,15 +379,27 @@ export default defineComponent({
                 if (txt.slice(0, 8) === '034e4452') {
                     this.computer.RAM = partition(txt.slice(8), 4).map(n => parseInt(n.slice(0, 2), '16'))
                     this.configStore.saveRAM(this.computer.RAM) // !!!
-                    // return
+                    return
+                }
+
+                // txt
+                const split = txt.split(/[\s,]+/)
+                if (split.length === 256) {
+                    this.computer.RAM = split.map(Number)
+                    this.configStore.saveRAM(this.computer.RAM) // !!!
                 }
             })
         },
         clearMemory () {
             this.computer.RAM = new Array(256).fill(0)
+            this.$emit('closeDrawer')
         },
-        loadExample (key) {
-            console.log(key)
+        loadExample (value) {
+            const e = { sum: examples.sum, sub: examples.sub, mul: examples.mul, fib: examples.fib }
+            if (e[value]) {
+                this.computer.RAM = e[value]
+                this.$emit('closeDrawer')
+            }
         },
         setPointer (PC) {
             this.computer.PC = PC

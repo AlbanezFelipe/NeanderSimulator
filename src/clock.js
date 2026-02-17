@@ -1,4 +1,4 @@
-const historyLimit = 100
+const historyLimit = 150
 
 export default class Clock {
     constructor (callback) {

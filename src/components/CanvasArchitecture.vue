@@ -320,7 +320,7 @@ export default defineComponent({
             // const ll = CON.x + CON.width / 3
             // const lr = CON.x + CON.width
             const s = 18
-            inst.forEach((v, i) => {
+            inst.forEach((v, i) => { // !!! order by with actived inst by last, and use manual index instead of the i from foreach
                 const stateInst = (v * 1) === this.computer.RI
                 if (i === 0) {
                     drawArrow(ctx, splitX, splitY, undefined, splitEndY, true, stateInst, true)

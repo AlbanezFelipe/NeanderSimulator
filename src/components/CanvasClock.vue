@@ -9,11 +9,12 @@
             <!-- Clock Frequency -->
             <div class="column" style="overflow: hidden; max-width: 100%;">
                 <div class="row items-center" style="overflow: hidden; max-width: 100%;">
-                    <span class="q-mr-sm text-slider">Clock Frequency (ms) {{ clock.frequency }}ms {{ (1000 / clock.frequency).toFixed(3) }}Hz</span>
+                    <span class="q-mr-sm text-slider">Clock Frequency (ms) {{ clock.frequency || 1 }}ms {{ (1000 / (clock.frequency || 1)).toFixed(3) }}Hz</span>
                     <q-badge rounded>
                         <span class="help">?</span>
-                        <q-tooltip anchor="center right" self="center left" :offset="[4, 4]">
-                            Duration in milliseconds of clock tick
+                        <q-tooltip class="bg-primary" anchor="center right" self="center left" :offset="[4, 4]">
+                            Duração Em milisegundos do pulso de clock
+                            <!-- Duration in milliseconds of clock tick -->
                         </q-tooltip>
                     </q-badge>
                 </div>
@@ -24,20 +25,20 @@
                     <span class="q-mr-sm text-slider">time/div (ms) {{ timeDiv }}</span>
                     <q-badge rounded>
                         <span class="help">?</span>
-                        <q-tooltip anchor="center right" self="center left" :offset="[4, 4]">
-                            Duration in milliseconds of clock tick
+                        <q-tooltip class="bg-primary" anchor="center right" self="center left" :offset="[4, 4]">
+                            Milisegundos por divisão
                         </q-tooltip>
                     </q-badge>
                 </div>
-                <q-slider v-model="timeDiv" :min="0" :max="5000" :step="5" label />
+                <q-slider v-model="timeDiv" :min="0" :max="3000" :step="5" label />
             </div>
             <div class="column" style="overflow: hidden; max-width: 100%;">
                 <div class="row items-center" style="overflow: hidden; max-width: 100%;">
                     <span class="q-mr-sm text-slider">divs {{ divs }}</span>
                     <q-badge rounded>
                         <span class="help">?</span>
-                        <q-tooltip anchor="center right" self="center left" :offset="[4, 4]">
-                            Duration in milliseconds of clock tick
+                        <q-tooltip class="bg-primary" anchor="center right" self="center left" :offset="[4, 4]">
+                            Número de divisões
                         </q-tooltip>
                     </q-badge>
                 </div>
